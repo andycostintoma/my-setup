@@ -9,40 +9,15 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ nixpkgs, nix-darwin, home-manager, ... }:
+  outputs = { nix-darwin, home-manager, ... }:
     let
       username = "andytoma";
       host = "Andys-Mac-mini";
 
-      mkPkgs = system: import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-
-      sharedUserPackages = pkgs: with pkgs; [
-        bat
-        curl
-        delta
-        direnv
-        eza
-        fd
-        fzf
-        gh
-        git
-        jq
-        opencode
-        ripgrep
-        shellcheck
-        shfmt
-        tmux
-        tree
-        wget
-        yq
-        zoxide
-      ];
-
-      darwinUserPackages = pkgs: with pkgs; [
+      userPackages = pkgs: with pkgs; [
         claude-code
+        curl
+        fd
         ffmpeg
         graphviz
         mermaid-cli
@@ -51,18 +26,26 @@
         mutt
         nextdns
         ollama
+        opencode
         pandoc
         pgcli
         poppler-utils
+        ripgrep
         rtk
         p7zip
+        shellcheck
+        shfmt
         stripe-cli
         tesseract
+        tmux
+        tree
         uv
         watch
+        wget
+        yq
       ];
 
-      darwinAppPackages = pkgs: with pkgs; [
+      systemPackages = pkgs: with pkgs; [
         discord
         ghostty-bin
         google-chrome
@@ -81,13 +64,11 @@
         zoom-us
       ];
 
-      homeModule = { pkgs, lib, ... }: {
+      homeModule = { pkgs, ... }: {
         home.username = username;
-        home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
+        home.homeDirectory = "/Users/${username}";
         home.stateVersion = "25.05";
-        home.packages =
-          sharedUserPackages pkgs
-          ++ lib.optionals pkgs.stdenv.isDarwin (darwinUserPackages pkgs);
+        home.packages = userPackages pkgs;
 
         home.file.".zprofile".text = ''
           export LANG=en_US.UTF-8
@@ -145,17 +126,13 @@
         };
       };
 
-      mkHome = system: home-manager.lib.homeManagerConfiguration {
-        pkgs = mkPkgs system;
-        modules = [ homeModule ];
-      };
     in {
       darwinConfigurations.${host} = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         modules = [
           ({ pkgs, ... }: {
             nixpkgs.config.allowUnfree = true;
-            nix.settings.experimental-features = "nix-command flakes";
+            nix.settings.experimental-features = [ "nix-command" "flakes" ];
             nix.gc = {
               automatic = true;
               interval = { Weekday = 0; Hour = 3; Minute = 15; };
@@ -164,9 +141,7 @@
             nix.optimise.automatic = true;
 
             users.users.${username}.home = "/Users/${username}";
-            environment.systemPackages = [
-              home-manager.packages.${pkgs.stdenv.hostPlatform.system}.home-manager
-            ] ++ darwinAppPackages pkgs;
+            environment.systemPackages = systemPackages pkgs;
 
             programs.zsh.enable = true;
 
@@ -182,9 +157,5 @@
           }
         ];
       };
-
-      homeConfigurations.${username} = mkHome "aarch64-darwin";
-      homeConfigurations."${username}@linux" = mkHome "x86_64-linux";
-
     };
 }

@@ -79,11 +79,43 @@
         '';
       };
 
+      kumospace = pkgs: pkgs.stdenvNoCC.mkDerivation {
+        pname = "kumospace";
+        version = "6.1.0";
+
+        src = pkgs.fetchurl {
+          name = "Kumospace-6.1.0.dmg";
+          url = "https://downloads.kumospace.com/production/macos/universal/latest/Kumospace.dmg";
+          hash = "sha256-wOf4dabEIsJd5yHWXwlA/+lSrvz6ijVvZHLvswNZSas=";
+        };
+
+        nativeBuildInputs = with pkgs; [
+          makeWrapper
+          undmg
+        ];
+
+        sourceRoot = ".";
+        dontConfigure = true;
+        dontBuild = true;
+        dontFixup = true;
+
+        installPhase = ''
+          runHook preInstall
+
+          mkdir -p $out/Applications $out/bin
+          cp -R "Kumospace.app" $out/Applications/
+          makeWrapper "$out/Applications/Kumospace.app/Contents/MacOS/Kumospace" $out/bin/kumospace
+
+          runHook postInstall
+        '';
+      };
+
       systemPackages = pkgs: with pkgs; [
         discord
         ghostty-bin
         google-chrome
         jetbrains-toolbox
+        (kumospace pkgs)
         libreoffice-bin
         (microsoftEdge pkgs)
         obsidian
@@ -122,7 +154,11 @@
           enable = true;
           autosuggestion.enable = true;
           syntaxHighlighting.enable = true;
-          oh-my-zsh.enable = true;
+          oh-my-zsh = {
+            enable = true;
+            theme = "robbyrussell";
+            plugins = [ "git" ];
+          };
           shellAliases = {
             medidrive = "ssh -i ~/.ssh/medidrive_key -o IdentitiesOnly=yes -t andy@35.243.44.225 'cd ~/medidrive && exec $SHELL -l'";
             medidrive-sync = "rsync -az --delete -e 'ssh -i ~/.ssh/medidrive_key -o IdentitiesOnly=yes' andy@35.243.44.225:~/medidrive/ ~/medidrive-local/";

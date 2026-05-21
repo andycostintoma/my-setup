@@ -40,12 +40,52 @@
         wget
       ];
 
+      microsoftEdge = pkgs: pkgs.stdenvNoCC.mkDerivation {
+        pname = "microsoft-edge";
+        version = "148.0.3967.70";
+
+        src = pkgs.fetchurl {
+          name = "MicrosoftEdge-148.0.3967.70.pkg";
+          url = "https://go.microsoft.com/fwlink/?linkid=2093504";
+          hash = "sha256-24Hhs89fxtEVtDrjnBxBGw2GsVUj/OsygSDYGC5QNqU=";
+        };
+
+        nativeBuildInputs = with pkgs; [
+          cpio
+          gzip
+          makeWrapper
+          xar
+        ];
+
+        dontConfigure = true;
+        dontBuild = true;
+        dontFixup = true;
+
+        unpackPhase = ''
+          runHook preUnpack
+          xar -xf $src
+          gzip -dc MicrosoftEdge-*.pkg/Payload | cpio -idm
+          runHook postUnpack
+        '';
+
+        installPhase = ''
+          runHook preInstall
+
+          mkdir -p $out/Applications $out/bin
+          cp -R "Microsoft Edge.app" $out/Applications/
+          makeWrapper "$out/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge" $out/bin/microsoft-edge
+
+          runHook postInstall
+        '';
+      };
+
       systemPackages = pkgs: with pkgs; [
         discord
         ghostty-bin
         google-chrome
         jetbrains-toolbox
         libreoffice-bin
+        (microsoftEdge pkgs)
         obsidian
         orbstack
         postman

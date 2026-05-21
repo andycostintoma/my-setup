@@ -1,0 +1,7 @@
+result
+result-*
+*.backup
+*.before-nix-darwin
+.envrc
+.direnv/
+.DS_Store

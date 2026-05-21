@@ -19,7 +19,7 @@
         config.allowUnfree = true;
       };
 
-      globalPackages = pkgs: with pkgs; [
+      sharedUserPackages = pkgs: with pkgs; [
         bat
         curl
         delta
@@ -41,10 +41,8 @@
         zoxide
       ];
 
-      # Transitional Brew parity: packages that were previously installed as
-      # Homebrew leaves and are available in nixpkgs. Split project-specific
-      # tools into per-repo flakes after Brew is removed.
-      brewFormulaParityPackages = pkgs: with pkgs; [
+      darwinUserPackages = pkgs: with pkgs; [
+        claude-code
         ffmpeg
         graphviz
         mermaid-cli
@@ -62,10 +60,6 @@
         tesseract
         uv
         watch
-      ];
-
-      darwinCliPackages = pkgs: with pkgs; [
-        claude-code
       ];
 
       darwinAppPackages = pkgs: with pkgs; [
@@ -92,9 +86,8 @@
         home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
         home.stateVersion = "25.05";
         home.packages =
-          globalPackages pkgs
-          ++ lib.optionals pkgs.stdenv.isDarwin (brewFormulaParityPackages pkgs)
-          ++ lib.optionals pkgs.stdenv.isDarwin (darwinCliPackages pkgs);
+          sharedUserPackages pkgs
+          ++ lib.optionals pkgs.stdenv.isDarwin (darwinUserPackages pkgs);
 
         home.file.".zprofile".text = ''
           export LANG=en_US.UTF-8

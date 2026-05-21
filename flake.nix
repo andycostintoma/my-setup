@@ -55,6 +55,7 @@
         msmtp
         mutt
         nextdns
+        nodejs
         ollama
         (openviking pkgs)
         opencode

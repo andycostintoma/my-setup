@@ -17,7 +17,6 @@
       userPackages = pkgs: with pkgs; [
         claude-code
         curl
-        fd
         ffmpeg
         graphviz
         mermaid-cli
@@ -33,16 +32,12 @@
         ripgrep
         rtk
         p7zip
-        shellcheck
-        shfmt
-        stripe-cli
         tesseract
         tmux
         tree
         uv
         watch
         wget
-        yq
       ];
 
       systemPackages = pkgs: with pkgs; [
@@ -100,15 +95,8 @@
           enable = true;
         };
 
-        programs.bat.enable = true;
-        programs.eza.enable = true;
         programs.gh.enable = true;
         programs.jq.enable = true;
-        programs.neovim = {
-          enable = true;
-          withPython3 = false;
-          withRuby = false;
-        };
       };
 
     in {

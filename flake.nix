@@ -14,6 +14,37 @@
       username = "andytoma";
       host = "Andys-Mac-mini";
 
+      openviking = pkgs:
+        let
+          version = "0.3.17";
+          uvxOpenViking = "${pkgs.uv}/bin/uvx --from openviking==${version}";
+        in
+        pkgs.runCommand "openviking-${version}" { } ''
+          mkdir -p $out/bin $out/hook-bin
+
+          cat > $out/bin/ov <<'EOF'
+          #!${pkgs.runtimeShell}
+          exec ${uvxOpenViking} ov "$@"
+          EOF
+
+          cat > $out/bin/openviking <<'EOF'
+          #!${pkgs.runtimeShell}
+          exec ${uvxOpenViking} openviking "$@"
+          EOF
+
+          cat > $out/bin/openviking-server <<'EOF'
+          #!${pkgs.runtimeShell}
+          exec ${uvxOpenViking} openviking-server "$@"
+          EOF
+
+          cat > $out/hook-bin/python3 <<'EOF'
+          #!${pkgs.runtimeShell}
+          exec ${uvxOpenViking} python "$@"
+          EOF
+
+          chmod +x $out/bin/ov $out/bin/openviking $out/bin/openviking-server $out/hook-bin/python3
+        '';
+
       userPackages = pkgs: with pkgs; [
         claude-code
         curl
@@ -25,6 +56,7 @@
         mutt
         nextdns
         ollama
+        (openviking pkgs)
         opencode
         pandoc
         pgcli
@@ -131,7 +163,22 @@
         zoom-us
       ];
 
-      homeModule = { pkgs, ... }: {
+      homeModule = { pkgs, ... }:
+        let
+          openvikingPackage = openviking pkgs;
+          openvikingClaudeHook = hookScript: ''
+            #!${pkgs.runtimeShell}
+            # Use the Nix-managed OpenViking wrapper instead of a mutable uv tool install.
+            export PATH="${openvikingPackage}/hook-bin:${openvikingPackage}/bin:$PATH"
+
+            PROJECT_DIR="''${CLAUDE_PROJECT_DIR:-$(pwd)}"
+            if [[ ! -f "$PROJECT_DIR/ov.conf" ]]; then
+              export CLAUDE_PROJECT_DIR="$HOME/.claude/ov-hooks"
+            fi
+
+            exec bash /Users/${username}/openviking_workspace/viking/default/resources/openviking/examples/claude-memory-plugin/hooks/${hookScript}
+          '';
+        in {
         home.username = username;
         home.homeDirectory = "/Users/${username}";
         home.stateVersion = "25.05";
@@ -141,6 +188,51 @@
           export LANG=en_US.UTF-8
           export LC_ALL=en_US.UTF-8
         '';
+
+        home.file.".openviking/ovcli.conf".text = ''
+          {"url":"http://127.0.0.1:1933"}
+        '';
+
+        home.file.".claude/hooks/ov-session-start.sh" = {
+          executable = true;
+          text = openvikingClaudeHook "session-start.sh";
+        };
+        home.file.".claude/hooks/ov-user-prompt.sh" = {
+          executable = true;
+          text = openvikingClaudeHook "user-prompt-submit.sh";
+        };
+        home.file.".claude/hooks/ov-stop.sh" = {
+          executable = true;
+          text = openvikingClaudeHook "stop.sh";
+        };
+        home.file.".claude/hooks/ov-session-end.sh" = {
+          executable = true;
+          text = openvikingClaudeHook "session-end.sh";
+        };
+
+        launchd.agents.openviking = {
+          enable = true;
+          config = {
+            ProgramArguments = [
+              "${openvikingPackage}/bin/openviking-server"
+              "--config"
+              "/Users/${username}/.openviking/ov.conf"
+              "--host"
+              "127.0.0.1"
+              "--port"
+              "1933"
+            ];
+            RunAtLoad = true;
+            KeepAlive = true;
+            WorkingDirectory = "/Users/${username}";
+            StandardOutPath = "/Users/${username}/Library/Logs/openviking-server.log";
+            StandardErrorPath = "/Users/${username}/Library/Logs/openviking-server.error.log";
+            EnvironmentVariables = {
+              HOME = "/Users/${username}";
+              PATH = "${pkgs.coreutils}/bin:${pkgs.bash}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+            };
+          };
+        };
 
         programs.home-manager.enable = true;
 

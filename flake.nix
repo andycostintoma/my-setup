@@ -100,21 +100,6 @@
           enable = true;
         };
 
-        programs.delta = {
-          enable = true;
-          enableGitIntegration = true;
-        };
-
-        programs.fzf = {
-          enable = true;
-          enableZshIntegration = true;
-        };
-
-        programs.zoxide = {
-          enable = true;
-          enableZshIntegration = true;
-        };
-
         programs.bat.enable = true;
         programs.eza.enable = true;
         programs.gh.enable = true;

@@ -39,9 +39,12 @@
         tesseract
         tmux
         tree
+        ty
         uv
         watch
         wget
+        yt-dlp
+        python3Packages.youtube-transcript-api
       ];
 
       systemPackagesFromNixpkgs = pkgs: with pkgs; [
@@ -151,12 +154,17 @@
           exec ${uvxOpenViking} openviking-server "$@"
           EOF
 
+          cat > $out/bin/vikingbot <<'EOF'
+          #!${pkgs.runtimeShell}
+          exec ${uvxOpenViking} vikingbot "$@"
+          EOF
+
           cat > $out/hook-bin/python3 <<'EOF'
           #!${pkgs.runtimeShell}
           exec ${uvxOpenViking} python "$@"
           EOF
 
-          chmod +x $out/bin/ov $out/bin/openviking $out/bin/openviking-server $out/hook-bin/python3
+          chmod +x $out/bin/ov $out/bin/openviking $out/bin/openviking-server $out/bin/vikingbot $out/hook-bin/python3
         '';
 
       userPackages = pkgs:
@@ -217,6 +225,15 @@
           opencodeSkills = mergeHarnessDir "opencode-skills" [
             (harness.shared + "/skills")
           ];
+
+          opencodeNodeModules = pkgs.importNpmLock.buildNodeModules {
+            npmRoot = harness.opencode;
+            nodejs = pkgs.nodejs;
+            derivationArgs = {
+              pname = "opencode-plugin-dependencies-node-modules";
+              version = "1.4.10";
+            };
+          };
 
           openvikingClaudeHook = hookScript: ''
             #!${pkgs.runtimeShell}
@@ -410,6 +427,59 @@
             {"url":"http://127.0.0.1:1933"}
           '';
 
+          home.file.".msmtprc" = {
+            force = true;
+            text = ''
+              defaults
+              auth on
+              tls on
+              tls_starttls on
+              tls_trust_file /etc/ssl/cert.pem
+              logfile ~/.msmtp.log
+
+              account gmail
+              host smtp.gmail.com
+              port 587
+              from toma.andy98@gmail.com
+              user toma.andy98@gmail.com
+              passwordeval "security find-generic-password -a toma.andy98@gmail.com -s opencode-msmtp-gmail -w"
+
+              account default : gmail
+            '';
+          };
+
+          home.file.".muttrc" = {
+            force = true;
+            text = ''
+              set realname = "Andy Toma"
+              set from = "toma.andy98@gmail.com"
+              set use_from = yes
+              set envelope_from = yes
+              set sendmail = "${pkgs.msmtp}/bin/msmtp"
+              set editor = "vi"
+
+              # Gmail IMAP. Passwords are intentionally kept out of this file.
+              set imap_user = "toma.andy98@gmail.com"
+              set folder = "imaps://toma.andy98%40gmail.com@imap.gmail.com:993"
+              set spoolfile = "+INBOX"
+              set postponed = "+[Gmail]/Drafts"
+              set record = "+[Gmail]/Sent Mail"
+              set trash = "+[Gmail]/Trash"
+
+              # Keep IMAP access usable for repeated triage.
+              set ssl_force_tls = yes
+              set header_cache = "~/.mutt/cache/headers"
+              set message_cachedir = "~/.mutt/cache/bodies"
+              set certificate_file = "~/.mutt/certificates"
+              set mail_check = 60
+              set timeout = 15
+
+              # Local/private auth overrides. This file may define `imap_pass` via macOS
+              # Keychain or leave it unset so mutt prompts interactively.
+              source ~/.mutt/gmail.auth
+            '';
+          };
+
           home.file.".gitconfig" = {
             force = true;
             text = ''
@@ -493,6 +563,7 @@
           home.file.".config/opencode/settings.json" = managed (harness.opencode + "/settings.json");
           home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
           home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");
+          home.file.".config/opencode/node_modules" = managed (opencodeNodeModules + "/node_modules");
           home.file.".config/opencode/dcp.jsonc" = managed (harness.opencode + "/dcp.jsonc");
           home.file.".config/opencode/agent-ladder.config.json" = managed (harness.opencode + "/agent-ladder.config.json");
           home.file.".config/opencode/SETUP.md" = managed (harness.opencode + "/SETUP.md");
@@ -544,11 +615,6 @@
             ${pkgs.rsync}/bin/rsync -a --delete \
               ${harness.opencode}/vendor/opencode-claude-auth/ \
               "$opencode_home/vendor/opencode-claude-auth/"
-
-            if [ ! -d "$opencode_home/node_modules/@opencode-ai/plugin" ] \
-              || [ "$opencode_home/package-lock.json" -nt "$opencode_home/node_modules/.package-lock.json" ] 2>/dev/null; then
-              (cd "$opencode_home" && ${pkgs.nodejs}/bin/npm install --silent --no-audit --no-fund)
-            fi
           '';
 
           home.file.".claude/hooks/ov-session-start.sh" = {
@@ -633,6 +699,33 @@
           programs.git.enable = true;
           programs.gh.enable = true;
           programs.jq.enable = true;
+
+          programs.vscode = {
+            enable = true;
+            package = null;
+            mutableExtensionsDir = true;
+            profiles.default.extensions = with pkgs.vscode-extensions; [
+              anthropic.claude-code
+              esbenp.prettier-vscode
+              github.copilot-chat
+              github.vscode-github-actions
+              golang.go
+              ms-azuretools.vscode-containers
+              ms-azuretools.vscode-docker
+              ms-kubernetes-tools.vscode-kubernetes-tools
+              ms-python.debugpy
+              ms-python.python
+              ms-python.vscode-pylance
+              ms-vscode-remote.remote-containers
+              ms-vscode.live-server
+              redhat.vscode-yaml
+              streetsidesoftware.code-spell-checker
+              tamasfe.even-better-toml
+              vscode-icons-team.vscode-icons
+              waderyan.gitblame
+              yoavbls.pretty-ts-errors
+            ];
+          };
         };
     in
     {

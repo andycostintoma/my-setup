@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "openviking-opencode",
+    "openrtk",
+    "@tarquinen/opencode-dcp@latest",
+    "./plugins/auto-recall.ts",
+    "./plugins/auto-explore.ts"
+  ],
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest",
+        "--isolated"
+      ],
+      "enabled": true
+    },
+    "postman": {
+      "type": "remote",
+      "url": "https://mcp.postman.com/mcp",
+      "enabled": false
+    }
+  }
+}

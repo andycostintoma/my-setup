@@ -1,0 +1,56 @@
+{
+  "providers": {
+    "openai": {
+      "label": "OpenAI",
+      "routerAgent": "build-auto-openai",
+      "routerModel": "openai/gpt-5.4-mini",
+      "routerReasoningEffort": "low",
+      "descriptionModels": "GPT-5.4 mini / GPT-5.4 / GPT-5.5",
+      "costReminder": "GPT-5.4 mini instead of GPT-5.5",
+      "tiers": {
+        "small": {
+          "agent": "openai-small",
+          "model": "openai/gpt-5.4-mini",
+          "display": "GPT-5.4 mini",
+          "reasoningEffort": "low"
+        },
+        "medium": {
+          "agent": "openai-medium",
+          "model": "openai/gpt-5.4",
+          "display": "GPT-5.4",
+          "reasoningEffort": "medium"
+        },
+        "high": {
+          "agent": "openai-high",
+          "model": "openai/gpt-5.5",
+          "display": "GPT-5.5",
+          "reasoningEffort": "high"
+        }
+      }
+    },
+    "anthropic": {
+      "label": "Anthropic",
+      "routerAgent": "build-auto-anthropic",
+      "routerModel": "anthropic/claude-haiku-4-5",
+      "descriptionModels": "Haiku 4.5 / Sonnet 4.6 / Opus 4.7",
+      "costReminder": "Haiku instead of Opus",
+      "tiers": {
+        "small": {
+          "agent": "anthropic-small",
+          "model": "anthropic/claude-haiku-4-5",
+          "display": "Haiku 4.5"
+        },
+        "medium": {
+          "agent": "anthropic-medium",
+          "model": "anthropic/claude-sonnet-4-6",
+          "display": "Sonnet 4.6"
+        },
+        "high": {
+          "agent": "anthropic-high",
+          "model": "anthropic/claude-opus-4-7",
+          "display": "Opus 4.7"
+        }
+      }
+    }
+  }
+}

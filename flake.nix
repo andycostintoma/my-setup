@@ -48,6 +48,7 @@
         google-chrome
         jetbrains-toolbox
         libreoffice-bin
+        teams
         obsidian
         orbstack
         postman
@@ -167,9 +168,26 @@
           (microsoftEdge pkgs)
         ];
 
-      homeModule = { pkgs, ... }:
+      harness = {
+        shared = ./harness/shared;
+        claude = ./harness/claude;
+        opencode = ./harness/opencode;
+      };
+
+      homeModule = { pkgs, lib, ... }:
         let
           openvikingPackage = openviking pkgs;
+
+          managed = source: {
+            inherit source;
+            force = true;
+          };
+
+          managedExecutable = source: {
+            inherit source;
+            executable = true;
+            force = true;
+          };
 
           openvikingClaudeHook = hookScript: ''
             #!${pkgs.runtimeShell}
@@ -197,6 +215,69 @@
           # Secret OpenViking config stays local in ~/.openviking/ov.conf.
           home.file.".openviking/ovcli.conf".text = ''
             {"url":"http://127.0.0.1:1933"}
+          '';
+
+          home.file.".config/opencode/opencode.json" = managed (harness.opencode + "/opencode.json");
+          home.file.".config/opencode/settings.json" = managed (harness.opencode + "/settings.json");
+          home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
+          home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");
+          home.file.".config/opencode/dcp.jsonc" = managed (harness.opencode + "/dcp.jsonc");
+          home.file.".config/opencode/agent-ladder.config.json" = managed (harness.opencode + "/agent-ladder.config.json");
+          home.file.".config/opencode/SETUP.md" = managed (harness.opencode + "/SETUP.md");
+          home.file.".config/opencode/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
+          home.file.".config/opencode/scripts" = managed (harness.opencode + "/scripts");
+          home.file.".config/opencode/agents" = managed (harness.opencode + "/agents");
+          home.file.".config/opencode/skills" = managed (harness.opencode + "/skills");
+          home.file.".config/opencode/commands" = managed (harness.shared + "/commands");
+
+          home.file.".claude/CLAUDE.md" = managed (harness.claude + "/CLAUDE.md");
+          home.file.".claude/RTK.md" = managed (harness.claude + "/RTK.md");
+          home.file.".claude/SETUP.md" = managed (harness.claude + "/SETUP.md");
+          home.file.".claude/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
+          home.file.".claude/settings.json" = managed (harness.claude + "/settings.json");
+          home.file.".claude/agents" = managed (harness.claude + "/agents");
+          home.file.".claude/skills" = managed (harness.claude + "/skills");
+          home.file.".claude/commands" = managed (harness.shared + "/commands");
+          home.file.".claude/hooks/rtk-rewrite.sh" = managedExecutable (harness.claude + "/hooks/rtk-rewrite.sh");
+          home.file.".claude/hooks/pre-compact.sh" = managedExecutable (harness.claude + "/hooks/pre-compact.sh");
+
+          home.activation.removeOldHarnessDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
+            set -eu
+
+            for target in \
+              /Users/${username}/.config/opencode/agents \
+              /Users/${username}/.config/opencode/commands \
+              /Users/${username}/.config/opencode/scripts \
+              /Users/${username}/.config/opencode/skills \
+              /Users/${username}/.claude/agents \
+              /Users/${username}/.claude/commands \
+              /Users/${username}/.claude/skills
+            do
+              if [ -e "$target" ] || [ -L "$target" ]; then
+                rm -rf "$target"
+              fi
+            done
+          '';
+
+          home.activation.publishMutableOpencodeAssets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            set -eu
+
+            opencode_home="/Users/${username}/.config/opencode"
+            install -d -m 0755 "$opencode_home/plugins" "$opencode_home/vendor"
+
+            ${pkgs.rsync}/bin/rsync -a --delete \
+              --exclude openviking-memory.log \
+              --exclude openviking-session-map.json \
+              ${harness.opencode}/plugins/ "$opencode_home/plugins/"
+
+            ${pkgs.rsync}/bin/rsync -a --delete \
+              ${harness.opencode}/vendor/opencode-claude-auth/ \
+              "$opencode_home/vendor/opencode-claude-auth/"
+
+            if [ ! -d "$opencode_home/node_modules/@opencode-ai/plugin" ] \
+              || [ "$opencode_home/package-lock.json" -nt "$opencode_home/node_modules/.package-lock.json" ] 2>/dev/null; then
+              (cd "$opencode_home" && ${pkgs.nodejs}/bin/npm install --silent --no-audit --no-fund)
+            fi
           '';
 
           home.file.".claude/hooks/ov-session-start.sh" = {

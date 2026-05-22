@@ -241,6 +241,170 @@
             export LC_ALL=en_US.UTF-8
           '';
 
+          home.file.".bash_profile" = {
+            force = true;
+            text = ''
+              export LANG=en_US.UTF-8
+              export LC_ALL=en_US.UTF-8
+            '';
+          };
+
+          home.file.".bashrc" = {
+            force = true;
+            text = ''
+              # Bash customizations are managed by Nix/Home Manager.
+            '';
+          };
+
+          home.file."Library/Application Support/Code/User/settings.json" = {
+            force = true;
+            text = ''
+              {
+                "vscode-edge-devtools.mirrorEdits": true,
+                "emmet.showSuggestionsAsSnippets": true,
+                "emmet.triggerExpansionOnTab": true,
+                "terminal.integrated.defaultProfile.windows": "PowerShell",
+                "workbench.iconTheme": "vscode-icons",
+                "extensions.autoCheckUpdates": false,
+                "extensions.autoUpdate": false,
+                "files.exclude": {
+                  "**/bin": true,
+                  "**/obj": true,
+                  "**/.classpath": true,
+                  "**/.project": true,
+                  "**/.settings": true,
+                  "**/.factorypath": true
+                },
+                "explorer.compactFolders": false,
+                "editor.suggestSelection": "first",
+                "redhat.telemetry.enabled": false,
+                "editor.inlineSuggest.enabled": true,
+                "git.confirmSync": false,
+                "git.enableSmartCommit": true,
+                "json.maxItemsComputed": 6000,
+                "editor.unicodeHighlight.nonBasicASCII": false,
+                "git.autofetch": true,
+                "vs-kubernetes": {
+                  "vscode-kubernetes.helm-path.windows": "C:\\Users\\andyt\\.vs-kubernetes\\tools\\helm\\windows-amd64\\helm.exe",
+                  "vscode-kubernetes.minikube-path.windows": "C:\\Users\\andyt\\.vs-kubernetes\\tools\\minikube\\windows-amd64\\minikube.exe",
+                  "vs-kubernetes.crd-code-completion": "enabled"
+                },
+                "yaml.schemas": {
+                  "Kubernetes": "*.yaml"
+                },
+                "files.associations": {
+                  "*.yml": "ansible",
+                  "*.j2": "ansible",
+                  "*.yaml": "yaml"
+                },
+                "remote.SSH.remotePlatform": {
+                  "10.13.173.144": "linux",
+                  "10.13.173.106": "linux",
+                  "10.13.79.12": "linux",
+                  "10.13.174.205": "windows",
+                  "10.13.173.115": "linux"
+                },
+                "diffEditor.ignoreTrimWhitespace": false,
+                "tabnine.experimentalAutoImports": true,
+                "[python]": {
+                  "editor.formatOnType": true
+                },
+                "editor.formatOnSave": true,
+                "aws.telemetry": false,
+                "yaml.customTags": [
+                  "!And",
+                  "!And sequence",
+                  "!If",
+                  "!If sequence",
+                  "!Not",
+                  "!Not sequence",
+                  "!Equals",
+                  "!Equals sequence",
+                  "!Or",
+                  "!Or sequence",
+                  "!FindInMap",
+                  "!FindInMap sequence",
+                  "!Base64",
+                  "!Join",
+                  "!Join sequence",
+                  "!Cidr",
+                  "!Ref",
+                  "!Sub",
+                  "!Sub sequence",
+                  "!GetAtt",
+                  "!GetAZs",
+                  "!ImportValue",
+                  "!ImportValue sequence",
+                  "!Select",
+                  "!Select sequence",
+                  "!Split",
+                  "!Split sequence"
+                ],
+                "security.workspace.trust.untrustedFiles": "open",
+                "quarkus.tools.alwaysShowWelcomePage": false,
+                "ansible.lightspeed.enabled": true,
+                "ansible.lightspeed.suggestions.enabled": true,
+                "[ruby]": {
+                  "editor.defaultFormatter": "Shopify.ruby-lsp",
+                  "editor.formatOnSave": true,
+                  "editor.formatOnType": true,
+                  "editor.tabSize": 2,
+                  "editor.insertSpaces": true,
+                  "editor.semanticHighlighting.enabled": true
+                },
+                "files.trimTrailingWhitespace": true,
+                "files.insertFinalNewline": true,
+                "editor.rulers": [120],
+                "editor.formatOnPaste": true,
+                "cSpell.autoFormatConfigFile": true,
+                "editor.formatOnType": true,
+                "typescript.preferences.preferTypeOnlyAutoImports": true,
+                "notebook.formatOnSave.enabled": true,
+                "[html]": {
+                  "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[javascriptreact]": {
+                  "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[json]": {
+                  "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "javascript.updateImportsOnFileMove.enabled": "always",
+                "github.copilot.editor.enableAutoCompletions": true,
+                "settingsSync.ignoredExtensions": [
+                  "kevinrose.vsc-python-indent",
+                  "redhat.vscode-tekton-pipelines"
+                ],
+                "[javascript]": {
+                  "editor.defaultFormatter": "vscode.typescript-language-features"
+                },
+                "github.copilot.enable": {
+                  "*": true,
+                  "plaintext": true,
+                  "markdown": false,
+                  "scminput": false,
+                  "javascript": true
+                },
+                "files.autoSave": "afterDelay",
+                "[typescriptreact]": {
+                  "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "camelk.integrations.runtimeVersion": "2.3.1",
+                "camelk.tools": {
+                  "camelk.tools.kamel-path": "/home/andy_toma/.vscode-server/data/User/globalStorage/redhat.vscode-camelk/camelk/tools/kamel/kamel"
+                },
+                "[yaml]": {
+                  "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[css]": {
+                  "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "go.toolsManagement.autoUpdate": false,
+                "claudeCode.preferredLocation": "panel"
+              }
+            '';
+          };
+
           # Secret OpenViking config stays local in ~/.openviking/ov.conf.
           home.file.".openviking/ovcli.conf".text = ''
             {"url":"http://127.0.0.1:1933"}

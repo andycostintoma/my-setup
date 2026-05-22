@@ -109,8 +109,9 @@ On Nix-managed machines, Nix/Home Manager is the source of truth for packages, s
 - Package installs: use Nix, Home Manager, nix-darwin, or project/workspace dev shells. Do not use Homebrew, global npm, global Go installs, Cargo installs, pip, pipx, uv tool installs, or ad-hoc curl installers on Nix-managed machines unless explicitly approved.
 - System/user configuration: manage macOS settings, shell configuration, editor/tool configuration, dotfiles, environment variables, and aliases through the Nix/Home Manager configuration whenever practical.
 - Agent harness assets: manage shared policy, commands, skills, agents, plugins, and stable harness config from `~/.config/nix-darwin/harness/`, not a separate sync tool.
-- Shell aliases and zsh setup: put them in Home Manager, usually `programs.zsh.shellAliases` or `programs.zsh.initExtra`; do not manually edit generated files such as `~/.zshrc`.
+- Shell aliases and zsh setup: put them in Home Manager, usually `programs.zsh.shellAliases` or `programs.zsh.initContent`; do not manually edit generated files such as `~/.zshrc`.
 - Package-manager shims such as `npx` or `uvx` are acceptable only when the runtime is provided by Nix and the invoked package/version is pinned or intentionally documented.
+- OpenViking is the current explicit shim exception on this machine: Nix provides `uv`/`uvx`, and `flake.nix` pins the OpenViking version invoked by the wrapper.
 - Keep secrets out of Nix/Git unless encrypted. Manage non-secret pointers/config through Nix/Home Manager when practical.
 - If a tool or configuration is missing from nixpkgs/Home Manager/nix-darwin, treat that as a Nix packaging/module task, a project/workspace dev-shell task, a replacement decision, or an explicit user-approved exception.
 

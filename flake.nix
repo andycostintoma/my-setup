@@ -130,8 +130,10 @@
         '';
       };
 
-      # OpenViking's PyPI wheel carries native artifacts and dependencies not all
-      # packaged in nixpkgs yet, so keep the escape hatch explicit and pinned.
+      # OpenViking's PyPI wheel carries native Rust/C++ artifacts and Python
+      # dependencies that are not all packaged in nixpkgs yet. Keep this as the
+      # one documented package-manager shim exception: Nix provides uv/uvx and
+      # the invoked OpenViking version is pinned here.
       openviking = pkgs:
         let
           version = "0.3.17";

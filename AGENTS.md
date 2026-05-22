@@ -12,6 +12,7 @@ These instructions apply to this entire `nix-darwin` configuration repository.
 - Put assets shared by Claude and OpenCode under `harness/shared/`; keep only harness-specific assets under `harness/claude/` and `harness/opencode/`.
 - Do not edit generated targets in `~/.claude/` or `~/.config/opencode/` directly when the source exists under `harness/`.
 - Do not use Homebrew, global npm installs, global Go installs, Cargo installs, pip, pipx, uv tool installs, or ad-hoc curl installers unless the user explicitly approves an exception.
+- OpenViking is the current explicit shim exception: Nix provides `uv`/`uvx`, and `flake.nix` pins the OpenViking version invoked by the wrapper.
 - Keep secrets out of this repository. Local OpenViking secrets belong in `~/.openviking/ov.conf`.
 
 ## Common Commands

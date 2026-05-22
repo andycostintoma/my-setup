@@ -428,6 +428,19 @@
             };
           };
 
+          launchd.agents."com.jetbrains.toolbox" = {
+            enable = true;
+            config = {
+              ProgramArguments = [
+                "/Applications/Nix Apps/JetBrains Toolbox.app/Contents/MacOS/jetbrains-toolbox"
+                "--minimize"
+              ];
+              RunAtLoad = true;
+              StandardOutPath = "/Users/${username}/Library/Logs/JetBrains/Toolbox/launchd-stdout.log";
+              StandardErrorPath = "/Users/${username}/Library/Logs/JetBrains/Toolbox/launchd-stderr.log";
+            };
+          };
+
           programs.home-manager.enable = true;
 
           programs.direnv = {

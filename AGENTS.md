@@ -19,6 +19,7 @@ These instructions apply to this entire `nix-darwin` configuration repository.
 
 - Bootstrap a new machine: `make bootstrap`
 - Apply the config: `make switch`
+- Run local health checks: `make audit`
 - Validate the flake: `nix flake check`
 - Apply system and Home Manager changes: `darwin-rebuild switch --flake ~/.config/nix-darwin`
 - Update inputs: `nix flake update`

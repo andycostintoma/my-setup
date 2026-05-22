@@ -16,7 +16,9 @@ Never do these without explicit user permission:
 ## Workflow Hygiene
 
 - `AGENTS.md` = stable policy; commands/skills = execution playbooks; `PLAN.md` = active state only.
+- On this machine, Nix and Home Manager are the source of truth for all durable system, user, package, shell, dotfile, and agent-harness configuration.
 - Keep harness policy, commands, skills, agents, and plugins in `~/.config/nix-darwin/harness/`. Nix/Home Manager publishes them into each harness.
+- Share as much as practical between Claude and OpenCode through `harness/shared/`; keep only genuinely harness-specific assets in `harness/claude/` or `harness/opencode/`.
 - Cross-repo research: search/index first, then read only what is needed. Use subagents for broad exploration.
 - When you find a structural smell, scan sibling flows for the same pattern and fix consistently.
 
@@ -114,21 +116,10 @@ On Nix-managed machines, Nix/Home Manager is the source of truth for packages, s
 
 Outside Nix-managed machines: use `uv tool` for Python CLI apps, never `pipx` or global `pip`; use project-local `uv` for project deps.
 
-Nix ownership does **not** mean every discovered tool becomes a global Home Manager package.
+Nix/Home Manager ownership does **not** mean every discovered tool becomes a global Home Manager package.
 
 - Global Nix/Home Manager: only baseline tools used everywhere, such as shell, editor, git, navigation, and universal debugging utilities.
 - Project Nix/dev shells: runtimes, compilers, linters, code generators, test tools, and CLIs tied to one repo or stack. Load them with `direnv` from the project's `flake.nix`.
 - Workspace Nix/dev shells: tools shared by a family of repos, such as cloud, Kubernetes, database, or vendor CLIs.
 - Do not migrate old global installs from Brew, npm, Go, Cargo, uv, pip, or pipx into global Nix by default. First classify whether each tool is truly global, project-specific, workspace-specific, packageable, replaceable, or should be dropped.
 - No Homebrew exception for this policy: if a tool is needed and not in nixpkgs, make it a Nix packaging task, project package, workspace package, replacement decision, or explicit drop.
-
----
-
-## Spanner CLI Aliases
-
-For interactive Spanner queries, use the user's pre-configured shell aliases instead of `gcloud spanner databases execute-sql` (faster, no endpoint-override fights):
-
-- `spanner-staging '<SQL>'` — staging `core` DB on instance `nemt`, project `medidrive-nemt-staging-452221`, with the staging service account.
-- Should be defined through Nix/Home Manager zsh configuration. Pass SQL as a quoted positional argument.
-- Read-only by default; use cautiously for any DML.
-- When in doubt, run `alias | rg spanner` to discover what's available.

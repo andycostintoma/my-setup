@@ -6,13 +6,13 @@ opencode-specific wiring on this machine. For the harness-agnostic stack (OpenVi
 
 - Global config: `~/.config/opencode/opencode.json`
 - Plugins: `~/.config/opencode/plugins/`
-- Skills: `~/.config/opencode/skills/` (managed by Home Manager from `~/.config/nix-darwin/harness/opencode/skills/`)
+- Skills: `~/.config/opencode/skills/` (managed by Home Manager from shared skills in `~/.config/nix-darwin/harness/shared/skills/`)
 - Commands: `~/.config/opencode/commands/` (managed by Home Manager from `~/.config/nix-darwin/harness/shared/commands/`)
-- Agents: `~/.config/opencode/agents/` (managed by Home Manager from `~/.config/nix-darwin/harness/opencode/agents/`)
+- Agents: `~/.config/opencode/agents/` (managed by Home Manager from shared agents in `harness/shared/agents/` plus opencode-specific agents in `harness/opencode/agents/`)
 
 ## Plugins
 
-Configured in `opencode.json` under `plugin`. Implementations in `~/.config/opencode/plugins/`.
+Enabled plugins are configured in `opencode.json` under `plugin`. Local implementations are published to `~/.config/opencode/plugins/`.
 
 | Plugin | Purpose |
 |---|---|
@@ -21,8 +21,11 @@ Configured in `opencode.json` under `plugin`. Implementations in `~/.config/open
 | `@tarquinen/opencode-dcp@latest` | provides the `compress` tool |
 | `./plugins/auto-recall.ts` | injects relevant OpenViking memories into the system prompt |
 | `./plugins/auto-explore.ts` | auto-spawns the `explore` subagent on search/discovery prompts |
-| `./plugins/sound-notify.ts` | Glass.aiff on permission/question events |
-| `./plugins/claude-auth.ts` | Claude subscription OAuth provider (vendored) |
+
+Available local plugin files not currently enabled in `opencode.json`:
+
+- `./plugins/sound-notify.ts` - Glass.aiff on permission/question events
+- `./plugins/claude-auth.ts` - Claude subscription OAuth provider (vendored)
 
 ### auto-explore
 

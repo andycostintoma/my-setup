@@ -7,9 +7,9 @@ Claude Code-specific wiring on this machine. For the harness-agnostic stack (Ope
 - Settings: `~/.claude/settings.json`
 - Global instructions: `~/.claude/CLAUDE.md` (managed by Home Manager from `~/.config/nix-darwin/harness/claude/CLAUDE.md`)
 - Hooks: `~/.claude/hooks/`
-- Agents: `~/.claude/agents/` (managed by Home Manager from `~/.config/nix-darwin/harness/claude/agents/`)
+- Agents: `~/.claude/agents/` (managed by Home Manager from shared agents in `~/.config/nix-darwin/harness/shared/agents/`)
 - Commands: `~/.claude/commands/` (managed by Home Manager from `~/.config/nix-darwin/harness/shared/commands/`)
-- Skills: `~/.claude/skills/` (managed by Home Manager from `~/.config/nix-darwin/harness/claude/skills/`)
+- Skills: `~/.claude/skills/` (managed by Home Manager from shared skills in `harness/shared/skills/`)
 - Plans: `~/.claude/plans/`
 - OV per-project default config: `~/.claude/ov-hooks/ov.conf`
 
@@ -38,13 +38,13 @@ The OV hooks are thin wrappers that delegate to the canonical OpenViking claude-
 - `Explore` — codebase exploration (prefer for broad search)
 - `statusline-setup` — config helper
 
-**User-defined** (in `~/.claude/agents/`, published by Home Manager from the nix-darwin repo):
+**User-defined** (in `~/.claude/agents/`, published by Home Manager from shared harness sources):
 
 - `code-reviewer` — `model: sonnet`
 - `security-reviewer` — `model: sonnet`
 - `tech-lead` — default model (heavy architectural reasoning)
 
-The `model:` field in agent frontmatter is respected by Claude Code. Edit canonical files in `~/.config/nix-darwin/harness/` and run `nix-switch` — never edit generated harness copies directly.
+The `model:` field in agent frontmatter is respected by Claude Code. Edit canonical files in `~/.config/nix-darwin/harness/` and run `nix-switch` - never edit generated harness copies directly.
 
 ## LiteLLM (opt-in, not enabled)
 

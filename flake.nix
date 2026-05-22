@@ -189,6 +189,33 @@
             force = true;
           };
 
+          mergeHarnessDir = name: sources:
+            pkgs.runCommand name { } (
+              ''
+                mkdir -p $out
+              ''
+              + lib.concatMapStringsSep "\n" (source: ''
+                cp -R ${source}/. $out/
+              '') sources
+            );
+
+          claudeAgents = mergeHarnessDir "claude-agents" [
+            (harness.shared + "/agents")
+          ];
+
+          claudeSkills = mergeHarnessDir "claude-skills" [
+            (harness.shared + "/skills")
+          ];
+
+          opencodeAgents = mergeHarnessDir "opencode-agents" [
+            (harness.shared + "/agents")
+            (harness.opencode + "/agents")
+          ];
+
+          opencodeSkills = mergeHarnessDir "opencode-skills" [
+            (harness.shared + "/skills")
+          ];
+
           openvikingClaudeHook = hookScript: ''
             #!${pkgs.runtimeShell}
             export PATH="${openvikingPackage}/hook-bin:${openvikingPackage}/bin:$PATH"
@@ -226,17 +253,16 @@
           home.file.".config/opencode/SETUP.md" = managed (harness.opencode + "/SETUP.md");
           home.file.".config/opencode/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
           home.file.".config/opencode/scripts" = managed (harness.opencode + "/scripts");
-          home.file.".config/opencode/agents" = managed (harness.opencode + "/agents");
-          home.file.".config/opencode/skills" = managed (harness.opencode + "/skills");
+          home.file.".config/opencode/agents" = managed opencodeAgents;
+          home.file.".config/opencode/skills" = managed opencodeSkills;
           home.file.".config/opencode/commands" = managed (harness.shared + "/commands");
 
           home.file.".claude/CLAUDE.md" = managed (harness.claude + "/CLAUDE.md");
-          home.file.".claude/RTK.md" = managed (harness.claude + "/RTK.md");
           home.file.".claude/SETUP.md" = managed (harness.claude + "/SETUP.md");
           home.file.".claude/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
           home.file.".claude/settings.json" = managed (harness.claude + "/settings.json");
-          home.file.".claude/agents" = managed (harness.claude + "/agents");
-          home.file.".claude/skills" = managed (harness.claude + "/skills");
+          home.file.".claude/agents" = managed claudeAgents;
+          home.file.".claude/skills" = managed claudeSkills;
           home.file.".claude/commands" = managed (harness.shared + "/commands");
           home.file.".claude/hooks/rtk-rewrite.sh" = managedExecutable (harness.claude + "/hooks/rtk-rewrite.sh");
           home.file.".claude/hooks/pre-compact.sh" = managedExecutable (harness.claude + "/hooks/pre-compact.sh");

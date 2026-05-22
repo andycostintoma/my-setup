@@ -25,7 +25,7 @@ Expected output per book:
 3. Run the bundled cleanup script at `scripts/epub_to_markdown.rb` from this skill directory:
 
 ```bash
-ruby "/Users/andytoma/.config/nix-darwin/harness/opencode/skills/epub-to-markdown/scripts/epub_to_markdown.rb" \
+ruby "/path/to/active/epub-to-markdown/scripts/epub_to_markdown.rb" \
   --src "/absolute/path/to/book.epub" \
   --dest-dir "/absolute/path/to/output/book-folder" \
   --output-name "Book_Name.md" \

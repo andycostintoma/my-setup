@@ -85,8 +85,10 @@ let logFilePath: string | null = null
 let pluginDataDir: string | null = null
 
 function ensurePluginDataDir(): string | null {
+  const xdgStateHome = process.env.XDG_STATE_HOME
+    || path.join(os.homedir(), ".local", "state")
   const pluginDir = process.env.OPENCODE_OPENVIKING_DATA_DIR
-    || path.join(os.homedir(), ".config", "opencode", "plugins")
+    || path.join(xdgStateHome, "opencode", "openviking")
   try {
     fs.mkdirSync(pluginDir, { recursive: true })
     return pluginDir

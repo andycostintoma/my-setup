@@ -5,14 +5,14 @@ opencode-specific wiring on this machine. For the harness-agnostic stack (OpenVi
 ## Key paths
 
 - Global config: `~/.config/opencode/opencode.json`
-- Plugins: `~/.config/opencode/plugins/`
+- Plugins: `~/.config/opencode/plugins/` (source files managed by Home Manager from `harness/opencode/plugins/`)
 - Skills: `~/.config/opencode/skills/` (managed by Home Manager from shared skills in `~/.config/nix-darwin/harness/shared/skills/`)
 - Commands: `~/.config/opencode/commands/` (managed by Home Manager from `~/.config/nix-darwin/harness/shared/commands/`)
 - Agents: `~/.config/opencode/agents/` (managed by Home Manager from shared agents in `harness/shared/agents/` plus opencode-specific agents in `harness/opencode/agents/`)
 
 ## Plugins
 
-Enabled plugins are configured in `opencode.json` under `plugin`. Local implementations are published to `~/.config/opencode/plugins/`.
+Enabled plugins are configured in `opencode.json` under `plugin`. Local implementations are Home Manager-managed files in `~/.config/opencode/plugins/`; OpenViking plugin state lives in `~/.local/state/opencode/openviking/`.
 
 | Plugin | Purpose |
 |---|---|
@@ -37,6 +37,12 @@ Available local plugin files not currently enabled in `opencode.json`:
 
 - Scopes to `preferences` + `entities` only (see LOCAL-STACK.md). Skips `events/`.
 - Score threshold 0.55, max 3 hits, decision cached per session.
+
+### openviking-memory
+
+- Source: `~/.config/opencode/plugins/openviking-memory.ts`
+- State/logs: `~/.local/state/opencode/openviking/`
+- Override state location with `OPENCODE_OPENVIKING_DATA_DIR` if needed.
 
 ## Quick checklist (opencode-specific)
 

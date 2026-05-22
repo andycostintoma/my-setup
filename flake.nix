@@ -130,7 +130,8 @@
         '';
       };
 
-      # OpenViking has a large Python dependency tree, so Nix pins uv and the package version.
+      # OpenViking's PyPI wheel carries native artifacts and dependencies not all
+      # packaged in nixpkgs yet, so keep the escape hatch explicit and pinned.
       openviking = pkgs:
         let
           version = "0.3.17";
@@ -601,18 +602,47 @@
             done
           '';
 
-          home.activation.publishMutableOpencodeAssets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          home.activation.migrateOpencodePluginState = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
+            set -eu
+
+            opencode_home="/Users/${username}/.config/opencode"
+            state_dir="/Users/${username}/.local/state/opencode/openviking"
+            install -d -m 0755 "$opencode_home/plugins" "$opencode_home/vendor" "$state_dir"
+
+            for file in openviking-memory.log openviking-session-map.json; do
+              if [ -e "$opencode_home/plugins/$file" ] && [ ! -e "$state_dir/$file" ]; then
+                mv "$opencode_home/plugins/$file" "$state_dir/$file"
+              fi
+              rm -f "$opencode_home/plugins/$file"
+            done
+
+            for file in \
+              auto-explore.ts \
+              auto-recall.ts \
+              claude-auth.ts \
+              openviking-config.json \
+              openviking-memory.ts \
+              rtk.ts \
+              sound-notify.ts
+            do
+              rm -f "$opencode_home/plugins/$file" "$opencode_home/plugins/$file.before-nix-darwin"
+            done
+
+            if [ -e "$opencode_home/vendor/opencode-claude-auth" ] || [ -L "$opencode_home/vendor/opencode-claude-auth" ]; then
+              chmod -R u+w "$opencode_home/vendor/opencode-claude-auth" 2>/dev/null || true
+              rm -rf "$opencode_home/vendor/opencode-claude-auth"
+            fi
+          '';
+
+          home.activation.publishOpencodePluginSources = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
             set -eu
 
             opencode_home="/Users/${username}/.config/opencode"
             install -d -m 0755 "$opencode_home/plugins" "$opencode_home/vendor"
 
-            ${pkgs.rsync}/bin/rsync -a --delete \
-              --exclude openviking-memory.log \
-              --exclude openviking-session-map.json \
+            ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
               ${harness.opencode}/plugins/ "$opencode_home/plugins/"
-
-            ${pkgs.rsync}/bin/rsync -a --delete \
+            ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
               ${harness.opencode}/vendor/opencode-claude-auth/ \
               "$opencode_home/vendor/opencode-claude-auth/"
           '';
@@ -694,6 +724,29 @@
               hm-switch = "home-manager switch --flake ~/.config/nix-darwin";
               nix-switch = "make -C ~/.config/nix-darwin switch";
             };
+            initExtra = ''
+              medidrive-upload() {
+                if [ "$#" -ne 2 ]; then
+                  printf 'usage: medidrive-upload SOURCE DEST\n' >&2
+                  return 2
+                fi
+
+                local source="$1"
+                local dest="$2"
+                local remote_host="andy@35.243.44.225"
+                local remote_base="/home/andy/medidrive"
+                local remote_path="$remote_base/$dest"
+                local remote_dir="''${remote_path:h}"
+
+                if [[ "$dest" = /* ]]; then
+                  printf 'DEST must be relative to ~/medidrive on the VM\n' >&2
+                  return 2
+                fi
+
+                ssh -i "$HOME/.ssh/medidrive_key" -o IdentitiesOnly=yes "$remote_host" "mkdir -p -- ''${(q)remote_dir}" || return
+                rsync -az -e "ssh -i $HOME/.ssh/medidrive_key -o IdentitiesOnly=yes" "$source" "$remote_host:$remote_path"
+              }
+            '';
           };
 
           programs.git.enable = true;

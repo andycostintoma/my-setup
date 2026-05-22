@@ -19,13 +19,14 @@ These instructions apply to this entire `nix-darwin` configuration repository.
 - Bootstrap a new machine: `make bootstrap`
 - Apply the config: `make switch`
 - Validate the flake: `nix flake check`
-- Apply system and Home Manager changes: `sudo darwin-rebuild switch --flake ~/.config/nix-darwin`
+- Apply system and Home Manager changes: `darwin-rebuild switch --flake ~/.config/nix-darwin`
 - Update inputs: `nix flake update`
 
 ## Editing Rules
 
 - Prefer small, direct changes in `flake.nix` over adding new files or abstractions.
 - Put globally useful CLI tools in `userPackagesFromNixpkgs`; put GUI/system apps in `systemPackagesFromNixpkgs`.
+- Put project-specific runtimes, linters, code generators, and test tools in project/workspace flakes or dev shells instead of global packages.
 - Add custom package derivations near the existing local package definitions, then include them through `userPackages` or `systemPackages`.
 - When changing published harness files, update the source in `harness/`, not the linked or rsynced destination.
 - Do not manually edit `flake.lock` unless updating inputs intentionally.

@@ -104,7 +104,7 @@ This permanently deletes the repo and all its indexed content. Confirm with the 
 
 ## Error Handling
 
-**`command not found: ov`** → Tell user: `pip install openviking --upgrade`. Stop.
+**`command not found: ov`** → On this machine, OpenViking is provided by Nix/Home Manager. Ask the user to run `make -C ~/.config/nix-darwin switch`; do not install it with `pip` or `uv tool`.
 
 **`url is required` / `CLI_CONFIG` error** → Auto-create config and retry:
 ```bash

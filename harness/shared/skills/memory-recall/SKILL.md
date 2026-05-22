@@ -17,7 +17,6 @@ Find the most relevant historical memories for: $ARGUMENTS
 
 **Otherwise**, use the Bash bridge:
 ```bash
-export PATH="$HOME/.local/share/uv/tools/openviking/bin:$PATH"
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-${OPENCODE_PROJECT_DIR:-$PWD}}"
 STATE_FILE="$PROJECT_DIR/.openviking/memory/session_state.json"
 if [[ ! -f "$STATE_FILE" ]]; then

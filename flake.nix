@@ -16,8 +16,10 @@
 
       # Plain nixpkgs packages: these update with `nix flake update`.
       userPackagesFromNixpkgs = pkgs: with pkgs; [
+        atlas
         claude-code
         curl
+        docker-compose
         ffmpeg
         graphviz
         mermaid-cli
@@ -244,6 +246,85 @@
             {"url":"http://127.0.0.1:1933"}
           '';
 
+          home.file.".gitconfig" = {
+            force = true;
+            text = ''
+              # Git Configuration
+
+              [user]
+                  name = Andy Toma
+                  email = toma.andy98@gmail.com
+
+              [init]
+                  defaultBranch = main
+
+              [pull]
+                  rebase = true
+
+              [credential]
+                  helper =
+
+              # Force SSH for MediDrive repos (uses special SSH host with medidrive_key)
+              [url "git@github.com-medidrive:MediDrive-Tech/"]
+                  insteadOf = git@github.com:MediDrive-Tech/
+              [url "ssh://git@github.com-medidrive/MediDrive-Tech/"]
+                  insteadOf = https://github.com/MediDrive-Tech/
+
+              # Override email for MediDrive repos
+              [includeIf "gitdir:~/medidrive/"]
+                  path = ~/.gitconfig-medidrive
+              [url "ssh://git@github.com/"]
+                  insteadOf = https://github.com/
+              [core]
+                  excludesfile = /Users/${username}/.gitignore_global
+                  editor = vim
+            '';
+          };
+
+          home.file.".gitconfig-medidrive" = {
+            force = true;
+            text = ''
+              [user]
+                  email = andy.toma@medidrive.com
+            '';
+          };
+
+          home.file.".gitignore_global" = {
+            force = true;
+            text = ''
+              .claude/
+            '';
+          };
+
+          home.file.".ssh/config" = {
+            force = true;
+            text = ''
+              # Added by OrbStack: 'orb' SSH host for Linux machines
+              Include ~/.orbstack/ssh/config
+
+              # Global SSH settings
+              Host *
+                UseKeychain yes
+                AddKeysToAgent yes
+
+              # MediDrive GitHub repositories - use work key
+              Host github.com-medidrive
+                HostName github.com
+                User git
+                IdentityFile ~/.ssh/medidrive_key
+                IdentitiesOnly yes
+
+              # Personal GitHub - use personal key (default)
+              Host github.com
+                HostName github.com
+                User git
+                IdentityFile ~/.ssh/personal_key
+                IdentitiesOnly yes
+            '';
+          };
+
+          home.file.".docker/cli-plugins/docker-compose" = managedExecutable "${pkgs.docker-compose}/bin/docker-compose";
+
           home.file.".config/opencode/opencode.json" = managed (harness.opencode + "/opencode.json");
           home.file.".config/opencode/settings.json" = managed (harness.opencode + "/settings.json");
           home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
@@ -368,7 +449,7 @@
               medidrive = "ssh -i ~/.ssh/medidrive_key -o IdentitiesOnly=yes -t andy@35.243.44.225 'cd ~/medidrive && exec $SHELL -l'";
               medidrive-sync = "rsync -az --delete -e 'ssh -i ~/.ssh/medidrive_key -o IdentitiesOnly=yes' andy@35.243.44.225:~/medidrive/ ~/medidrive-local/";
               hm-switch = "home-manager switch --flake ~/.config/nix-darwin";
-              nix-switch = "sudo darwin-rebuild switch --flake ~/.config/nix-darwin";
+              nix-switch = "make -C ~/.config/nix-darwin switch";
             };
           };
 

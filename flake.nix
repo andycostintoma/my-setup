@@ -640,6 +640,9 @@
             opencode_home="/Users/${username}/.config/opencode"
             install -d -m 0755 "$opencode_home/plugins" "$opencode_home/vendor"
 
+            # opencode loads TypeScript plugins by real path. Individual Nix-store
+            # symlinks break relative imports and node_modules resolution, so copy
+            # this source tree while keeping plugin state out of it.
             ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
               ${harness.opencode}/plugins/ "$opencode_home/plugins/"
             ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
@@ -724,7 +727,7 @@
               hm-switch = "home-manager switch --flake ~/.config/nix-darwin";
               nix-switch = "make -C ~/.config/nix-darwin switch";
             };
-            initExtra = ''
+            initContent = ''
               medidrive-upload() {
                 if [ "$#" -ne 2 ]; then
                   printf 'usage: medidrive-upload SOURCE DEST\n' >&2

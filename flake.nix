@@ -28,6 +28,7 @@
         mutt
         nextdns
         nodejs
+        bun
         ollama
         opencode
         pandoc
@@ -102,6 +103,17 @@
         '';
       };
 
+      # OpenClaw's runtime rejects hardlinked bundled plugin public-surface
+      # files. nixpkgs currently ships at least some of those files hardlinked,
+      # so copy the package into a local output before launching it.
+      openclawUnhardlinked = pkgs:
+        pkgs.runCommand "openclaw-${pkgs.openclaw.version}-unhardlinked" { } ''
+          mkdir -p "$out"
+          cp -R ${pkgs.openclaw}/. "$out/"
+          substituteInPlace "$out/bin/openclaw" \
+            --replace-fail "${pkgs.openclaw}" "$out"
+        '';
+
       kumospace = pkgs: pkgs.stdenvNoCC.mkDerivation {
         pname = "kumospace";
         version = "6.1.0";
@@ -170,9 +182,30 @@
           chmod +x $out/bin/ov $out/bin/openviking $out/bin/openviking-server $out/bin/vikingbot $out/hook-bin/python3
         '';
 
+      # Kimaki is not packaged in nixpkgs yet. Keep it pinned and invoked through
+      # Nix-provided Node/npm tooling; do not install it globally with npm.
+      kimaki = pkgs:
+        let
+          version = "0.12.0";
+        in
+        pkgs.runCommand "kimaki-${version}" { } ''
+          mkdir -p $out/bin
+
+          cat > $out/bin/kimaki <<'EOF'
+          #!${pkgs.runtimeShell}
+          exec ${pkgs.nodejs}/bin/npx -y kimaki@${version} "$@"
+          EOF
+
+          chmod +x $out/bin/kimaki
+        '';
+
       userPackages = pkgs:
         userPackagesFromNixpkgs pkgs
-        ++ [ (openviking pkgs) ];
+        ++ [
+          (kimaki pkgs)
+          (openclawUnhardlinked pkgs)
+          (openviking pkgs)
+        ];
 
       systemPackages = pkgs:
         systemPackagesFromNixpkgs pkgs
@@ -184,11 +217,14 @@
       harness = {
         shared = ./harness/shared;
         claude = ./harness/claude;
+        openclaw = ./harness/openclaw;
         opencode = ./harness/opencode;
       };
 
       homeModule = { pkgs, lib, ... }:
         let
+          openclawPackage = openclawUnhardlinked pkgs;
+          kimakiPackage = kimaki pkgs;
           openvikingPackage = openviking pkgs;
 
           managed = source: {
@@ -576,6 +612,95 @@
           home.file.".config/opencode/skills" = managed opencodeSkills;
           home.file.".config/opencode/commands" = managed (harness.shared + "/commands");
 
+          home.file.".local/bin/ollama-ensure-models" = {
+            executable = true;
+            text = ''
+              #!${pkgs.runtimeShell}
+              set -eu
+
+              export HOME="/Users/${username}"
+              export OLLAMA_HOST="''${OLLAMA_HOST:-127.0.0.1:11434}"
+              export PATH="${lib.makeBinPath [ pkgs.ollama pkgs.coreutils ]}:/usr/bin:/bin:/usr/sbin:/sbin"
+
+              for _ in $(${pkgs.coreutils}/bin/seq 1 60); do
+                if ${pkgs.ollama}/bin/ollama list >/dev/null 2>&1; then
+                  break
+                fi
+                ${pkgs.coreutils}/bin/sleep 2
+              done
+
+              if ! ${pkgs.ollama}/bin/ollama list >/dev/null 2>&1; then
+                printf 'Ollama server is not available at %s; skipping model install for now.\n' "$OLLAMA_HOST" >&2
+                exit 0
+              fi
+
+              for model in qwen3.5:9b qwen3.5:4b; do
+                if ! ${pkgs.ollama}/bin/ollama show "$model" >/dev/null 2>&1; then
+                  ${pkgs.ollama}/bin/ollama pull "$model"
+                fi
+              done
+            '';
+          };
+
+          home.file.".local/bin/opencode-web-server" = {
+            executable = true;
+            text = ''
+              #!${pkgs.runtimeShell}
+              set -eu
+
+              password_file="$HOME/.secrets/opencode/web-password"
+              if [ ! -s "$password_file" ]; then
+                printf 'Missing opencode web password file: %s\n' "$password_file" >&2
+                exit 1
+              fi
+
+              export HOME="/Users/${username}"
+              export OPENCODE_SERVER_USERNAME="opencode"
+              export OPENCODE_SERVER_PASSWORD="$(cat "$password_file")"
+              export PATH="${lib.makeBinPath (userPackages pkgs ++ [
+                pkgs.bash
+                pkgs.coreutils
+                pkgs.git
+                pkgs.nodejs
+                pkgs.bun
+              ])}:/usr/bin:/bin:/usr/sbin:/sbin"
+
+              exec ${pkgs.opencode}/bin/opencode web \
+                --port 4096 \
+                --hostname 0.0.0.0 \
+                --mdns \
+                --mdns-domain opencode.local
+            '';
+          };
+
+          home.file.".local/bin/kimaki-server" = {
+            executable = true;
+            text = ''
+              #!${pkgs.runtimeShell}
+              set -eu
+
+              export HOME="/Users/${username}"
+              data_dir="$HOME/.kimaki"
+              db_file="$data_dir/discord-sessions.db"
+
+              if [ ! -s "$db_file" ]; then
+                printf 'Kimaki is not configured yet. Run: kimaki --data-dir %s\n' "$data_dir" >&2
+                exit 0
+              fi
+
+              export KIMAKI_LOCK_PORT="''${KIMAKI_LOCK_PORT:-31000}"
+              export PATH="${lib.makeBinPath (userPackages pkgs ++ [
+                pkgs.bash
+                pkgs.coreutils
+                pkgs.git
+                pkgs.nodejs
+                pkgs.bun
+              ])}:/usr/bin:/bin:/usr/sbin:/sbin"
+
+              exec ${kimakiPackage}/bin/kimaki --data-dir "$data_dir"
+            '';
+          };
+
           home.file.".claude/CLAUDE.md" = managed (harness.claude + "/CLAUDE.md");
           home.file.".claude/SETUP.md" = managed (harness.claude + "/SETUP.md");
           home.file.".claude/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
@@ -652,6 +777,20 @@
               "$opencode_home/vendor/opencode-claude-auth/"
           '';
 
+          home.activation.opencodeWebSecrets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            set -eu
+
+            secret_dir="/Users/${username}/.secrets/opencode"
+            password_file="$secret_dir/web-password"
+
+            install -d -m 0700 "$secret_dir" /Users/${username}/.kimaki /Users/${username}/Library/Logs
+            if [ ! -s "$password_file" ]; then
+              umask 077
+              ${pkgs.openssl}/bin/openssl rand -base64 32 > "$password_file"
+            fi
+            chmod 0600 "$password_file"
+          '';
+
           home.file.".claude/hooks/ov-session-start.sh" = {
             executable = true;
             text = openvikingClaudeHook "session-start.sh";
@@ -667,6 +806,47 @@
           home.file.".claude/hooks/ov-session-end.sh" = {
             executable = true;
             text = openvikingClaudeHook "session-end.sh";
+          };
+
+          launchd.agents.ollama = {
+            enable = true;
+            config = {
+              ProgramArguments = [
+                "${pkgs.ollama}/bin/ollama"
+                "serve"
+              ];
+              RunAtLoad = true;
+              KeepAlive = true;
+              WorkingDirectory = "/Users/${username}";
+              StandardOutPath = "/Users/${username}/Library/Logs/ollama.log";
+              StandardErrorPath = "/Users/${username}/Library/Logs/ollama.error.log";
+              EnvironmentVariables = {
+                HOME = "/Users/${username}";
+                OLLAMA_HOST = "127.0.0.1:11434";
+                OLLAMA_CONTEXT_LENGTH = "32768";
+                OLLAMA_KEEP_ALIVE = "1m";
+                OLLAMA_MAX_LOADED_MODELS = "1";
+                PATH = "${pkgs.coreutils}/bin:${pkgs.bash}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+              };
+            };
+          };
+
+          launchd.agents.ollama-ensure-models = {
+            enable = true;
+            config = {
+              ProgramArguments = [
+                "/Users/${username}/.local/bin/ollama-ensure-models"
+              ];
+              RunAtLoad = true;
+              StartInterval = 3600;
+              WorkingDirectory = "/Users/${username}";
+              StandardOutPath = "/Users/${username}/Library/Logs/ollama-ensure-models.log";
+              StandardErrorPath = "/Users/${username}/Library/Logs/ollama-ensure-models.error.log";
+              EnvironmentVariables = {
+                HOME = "/Users/${username}";
+                OLLAMA_HOST = "127.0.0.1:11434";
+              };
+            };
           };
 
           launchd.agents.openviking = {
@@ -689,6 +869,82 @@
               EnvironmentVariables = {
                 HOME = "/Users/${username}";
                 PATH = "${pkgs.coreutils}/bin:${pkgs.bash}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+              };
+            };
+          };
+
+          launchd.agents.opencode-web = {
+            enable = true;
+            config = {
+              ProgramArguments = [
+                "/Users/${username}/.local/bin/opencode-web-server"
+              ];
+              RunAtLoad = true;
+              KeepAlive = true;
+              WorkingDirectory = "/Users/${username}";
+              StandardOutPath = "/Users/${username}/Library/Logs/opencode-web.log";
+              StandardErrorPath = "/Users/${username}/Library/Logs/opencode-web.error.log";
+              EnvironmentVariables = {
+                HOME = "/Users/${username}";
+              };
+            };
+          };
+
+          launchd.agents.kimaki = {
+            enable = true;
+            config = {
+              ProgramArguments = [
+                "/Users/${username}/.local/bin/kimaki-server"
+              ];
+              RunAtLoad = true;
+              KeepAlive = {
+                SuccessfulExit = false;
+              };
+              WorkingDirectory = "/Users/${username}";
+              StandardOutPath = "/Users/${username}/Library/Logs/kimaki.log";
+              StandardErrorPath = "/Users/${username}/Library/Logs/kimaki.error.log";
+              EnvironmentVariables = {
+                HOME = "/Users/${username}";
+              };
+            };
+          };
+
+          home.file.".openclaw/openclaw.json" = managed (harness.openclaw + "/openclaw.json");
+          home.file.".openclaw/workspace/IDENTITY.md" = managed (harness.openclaw + "/workspace/IDENTITY.md");
+          home.file.".openclaw/workspace/SOUL.md" = managed (harness.openclaw + "/workspace/SOUL.md");
+          home.file.".openclaw/workspace/USER.md" = managed (harness.openclaw + "/workspace/USER.md");
+
+          home.activation.openclawDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            run --quiet ${pkgs.coreutils}/bin/mkdir -p \
+              /Users/${username}/.openclaw/workspace \
+              /Users/${username}/.openclaw/workspace/memory \
+              /Users/${username}/Library/Logs
+          '';
+
+          launchd.agents.openclaw = {
+            enable = true;
+            config = {
+              ProgramArguments = [
+                "${openclawPackage}/bin/openclaw"
+                "gateway"
+                "--port"
+                "18789"
+                "run"
+              ];
+              RunAtLoad = true;
+              KeepAlive = true;
+              WorkingDirectory = "/Users/${username}/.openclaw";
+              StandardOutPath = "/Users/${username}/Library/Logs/openclaw-gateway.log";
+              StandardErrorPath = "/Users/${username}/Library/Logs/openclaw-gateway.error.log";
+              EnvironmentVariables = {
+                HOME = "/Users/${username}";
+                OPENCLAW_CONFIG_PATH = "/Users/${username}/.openclaw/openclaw.json";
+                OPENCLAW_STATE_DIR = "/Users/${username}/.openclaw";
+                OPENCLAW_NIX_MODE = "1";
+                PATH = lib.makeBinPath (userPackages pkgs ++ [
+                  pkgs.bash
+                  pkgs.coreutils
+                ]) + ":/usr/bin:/bin:/usr/sbin:/sbin";
               };
             };
           };
@@ -728,6 +984,7 @@
               medidrive-sync = "rsync -az --delete -e 'ssh -i ~/.ssh/medidrive_key -o IdentitiesOnly=yes' andy@35.243.44.225:~/medidrive/ ~/medidrive-local/";
               hm-switch = "home-manager switch --flake ~/.config/nix-darwin";
               nix-switch = "make -C ~/.config/nix-darwin switch";
+              opencode = "sudo -E ${pkgs.opencode}/bin/opencode";
             };
             initContent = ''
               medidrive-upload() {
@@ -791,7 +1048,12 @@
         system = "aarch64-darwin";
         modules = [
           ({ pkgs, ... }: {
-            nixpkgs.config.allowUnfree = true;
+            nixpkgs.config = {
+              allowUnfree = true;
+              permittedInsecurePackages = [
+                "openclaw-2026.5.7"
+              ];
+            };
             nix.settings.experimental-features = [ "nix-command" "flakes" ];
             nix.gc = {
               automatic = true;
@@ -801,7 +1063,12 @@
             nix.optimise.automatic = true;
 
             users.users.${username}.home = "/Users/${username}";
+            security.sudo.extraConfig = ''
+              ${username} ALL=(root) NOPASSWD:SETENV: ${pkgs.opencode}/bin/opencode
+            '';
             environment.systemPackages = systemPackages pkgs;
+
+            services.tailscale.enable = true;
 
             programs.zsh.enable = true;
 

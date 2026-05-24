@@ -10,7 +10,19 @@
       "models": {
         "openai-codex/gpt-5.5": {},
         "openai/gpt-5.5": {}
-      }
+      },
+      "skills": [
+        "openviking",
+        "memory-recall",
+        "go-service",
+        "go-performance",
+        "go-grpc",
+        "go-client-lib",
+        "go-bff",
+        "epub-to-markdown",
+        "wiki",
+        "use-modern-go"
+      ]
     }
   },
   "auth": {
@@ -109,6 +121,14 @@
         "path": "/Users/andytoma/.secrets/openclaw/telegram-bot-token",
         "source": "file"
       }
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "bun"
+    },
+    "load": {
+      "watch": false
     }
   },
   "tools": {

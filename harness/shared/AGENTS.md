@@ -17,8 +17,8 @@ Never do these without explicit user permission:
 
 - `AGENTS.md` = stable policy; commands/skills = execution playbooks; `PLAN.md` = active state only.
 - On this machine, Nix and Home Manager are the source of truth for all durable system, user, package, shell, dotfile, and agent-harness configuration.
-- Keep harness policy, commands, skills, agents, and plugins in `~/.config/nix-darwin/harness/`. Nix/Home Manager publishes them into each harness.
-- Share as much as practical between Claude and OpenCode through `harness/shared/`; keep only genuinely harness-specific assets in `harness/claude/` or `harness/opencode/`.
+- Keep harness policy, commands, skills, agents, and plugins in `~/.config/nix-darwin/harness/`. Nix/Home Manager publishes them into each active harness.
+- Share as much as practical across active harnesses through `harness/shared/`; keep only genuinely harness-specific assets in each `harness/<name>/` directory.
 - Cross-repo research: search/index first, then read only what is needed. Use subagents for broad exploration.
 - When you find a structural smell, scan sibling flows for the same pattern and fix consistently.
 

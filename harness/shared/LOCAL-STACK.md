@@ -1,6 +1,6 @@
 # Local Stack (harness-agnostic)
 
-Shared local infrastructure that supports multiple AI agent harnesses (opencode, Claude Code, codex, pi). Each harness has its own `SETUP.md` for harness-specific wiring; this doc covers the components that all of them can plug into.
+Shared local infrastructure that supports multiple AI agent harnesses. Each harness has its own `SETUP.md` for harness-specific wiring; this doc covers the components that all of them can plug into.
 
 Canonical source: `~/.config/nix-darwin/harness/shared/LOCAL-STACK.md`. Home Manager publishes this file into each harness root.
 
@@ -32,7 +32,6 @@ Avoid `events/` — diary-style noise that hurts signal.
 ### Per-harness adoption
 
 - **opencode**: `auto-recall.ts` plugin injects relevant memories into the system prompt on the first user message of a session.
-- **Claude Code**: hook-based recall via `~/.claude/hooks/ov-{session-start,user-prompt,stop,session-end}.sh`. Per-project default config at `~/.claude/ov-hooks/ov.conf`.
 
 ## rtk
 
@@ -48,7 +47,6 @@ CLI proxy that strips noise, deduplicates, and summarizes shell output before it
 ### Per-harness adoption
 
 - **opencode**: `openrtk` plugin wraps bash tool execution.
-- **Claude Code**: `~/.claude/hooks/rtk-rewrite.sh` on PreToolUse Bash. Requires `rtk >= 0.23.0` and `jq`.
 
 ## Quick checklist
 

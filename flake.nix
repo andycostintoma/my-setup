@@ -216,7 +216,6 @@
 
       harness = {
         shared = ./harness/shared;
-        claude = ./harness/claude;
         openclaw = ./harness/openclaw;
         opencode = ./harness/opencode;
       };
@@ -248,14 +247,6 @@
               '') sources
             );
 
-          claudeAgents = mergeHarnessDir "claude-agents" [
-            (harness.shared + "/agents")
-          ];
-
-          claudeSkills = mergeHarnessDir "claude-skills" [
-            (harness.shared + "/skills")
-          ];
-
           opencodeAgents = mergeHarnessDir "opencode-agents" [
             (harness.shared + "/agents")
             (harness.opencode + "/agents")
@@ -274,17 +265,6 @@
             };
           };
 
-          openvikingClaudeHook = hookScript: ''
-            #!${pkgs.runtimeShell}
-            export PATH="${openvikingPackage}/hook-bin:${openvikingPackage}/bin:$PATH"
-
-            PROJECT_DIR="''${CLAUDE_PROJECT_DIR:-$(pwd)}"
-            if [[ ! -f "$PROJECT_DIR/ov.conf" ]]; then
-              export CLAUDE_PROJECT_DIR="$HOME/.claude/ov-hooks"
-            fi
-
-            exec bash /Users/${username}/openviking_workspace/viking/default/resources/openviking/examples/claude-memory-plugin/hooks/${hookScript}
-          '';
         in
         {
           home.username = username;
@@ -455,8 +435,7 @@
                 "[css]": {
                   "editor.defaultFormatter": "esbenp.prettier-vscode"
                 },
-                "go.toolsManagement.autoUpdate": false,
-                "claudeCode.preferredLocation": "panel"
+                "go.toolsManagement.autoUpdate": false
               }
             '';
           };
@@ -565,7 +544,6 @@
           home.file.".gitignore_global" = {
             force = true;
             text = ''
-              .claude/
             '';
           };
 
@@ -702,16 +680,6 @@
             '';
           };
 
-          home.file.".claude/CLAUDE.md" = managed (harness.claude + "/CLAUDE.md");
-          home.file.".claude/SETUP.md" = managed (harness.claude + "/SETUP.md");
-          home.file.".claude/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
-          home.file.".claude/settings.json" = managed (harness.claude + "/settings.json");
-          home.file.".claude/agents" = managed claudeAgents;
-          home.file.".claude/skills" = managed claudeSkills;
-          home.file.".claude/commands" = managed (harness.shared + "/commands");
-          home.file.".claude/hooks/rtk-rewrite.sh" = managedExecutable (harness.claude + "/hooks/rtk-rewrite.sh");
-          home.file.".claude/hooks/pre-compact.sh" = managedExecutable (harness.claude + "/hooks/pre-compact.sh");
-
           home.activation.removeOldHarnessDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
             set -eu
 
@@ -720,9 +688,7 @@
               /Users/${username}/.config/opencode/commands \
               /Users/${username}/.config/opencode/scripts \
               /Users/${username}/.config/opencode/skills \
-              /Users/${username}/.claude/agents \
-              /Users/${username}/.claude/commands \
-              /Users/${username}/.claude/skills
+              /Users/${username}/.openclaw/skills
             do
               if [ -e "$target" ] || [ -L "$target" ]; then
                 rm -rf "$target"
@@ -791,23 +757,6 @@
             fi
             chmod 0600 "$password_file"
           '';
-
-          home.file.".claude/hooks/ov-session-start.sh" = {
-            executable = true;
-            text = openvikingClaudeHook "session-start.sh";
-          };
-          home.file.".claude/hooks/ov-user-prompt.sh" = {
-            executable = true;
-            text = openvikingClaudeHook "user-prompt-submit.sh";
-          };
-          home.file.".claude/hooks/ov-stop.sh" = {
-            executable = true;
-            text = openvikingClaudeHook "stop.sh";
-          };
-          home.file.".claude/hooks/ov-session-end.sh" = {
-            executable = true;
-            text = openvikingClaudeHook "session-end.sh";
-          };
 
           launchd.agents.ollama = {
             enable = true;
@@ -933,8 +882,12 @@
           };
 
           home.file.".openclaw/openclaw.json" = managed (harness.openclaw + "/openclaw.json");
+          home.file.".openclaw/skills" = managed (harness.shared + "/skills");
+          home.file.".openclaw/workspace/AGENTS.md" = managed (harness.openclaw + "/workspace/AGENTS.md");
+          home.file.".openclaw/workspace/HEARTBEAT.md" = managed (harness.openclaw + "/workspace/HEARTBEAT.md");
           home.file.".openclaw/workspace/IDENTITY.md" = managed (harness.openclaw + "/workspace/IDENTITY.md");
           home.file.".openclaw/workspace/SOUL.md" = managed (harness.openclaw + "/workspace/SOUL.md");
+          home.file.".openclaw/workspace/TOOLS.md" = managed (harness.openclaw + "/workspace/TOOLS.md");
           home.file.".openclaw/workspace/USER.md" = managed (harness.openclaw + "/workspace/USER.md");
 
           home.activation.openclawDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -1043,7 +996,6 @@
             package = null;
             mutableExtensionsDir = true;
             profiles.default.extensions = with pkgs.vscode-extensions; [
-              anthropic.claude-code
               esbenp.prettier-vscode
               github.copilot-chat
               github.vscode-github-actions

@@ -603,6 +603,7 @@
           home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
           home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");
           home.file.".config/opencode/node_modules" = managed (opencodeNodeModules + "/node_modules");
+          home.file.".config/opencode/ollama-opencode-proxy.js" = managedExecutable (harness.opencode + "/ollama-opencode-proxy.js");
           home.file.".config/opencode/dcp.jsonc" = managed (harness.opencode + "/dcp.jsonc");
           home.file.".config/opencode/agent-ladder.config.json" = managed (harness.opencode + "/agent-ladder.config.json");
           home.file.".config/opencode/SETUP.md" = managed (harness.opencode + "/SETUP.md");
@@ -845,6 +846,28 @@
               EnvironmentVariables = {
                 HOME = "/Users/${username}";
                 OLLAMA_HOST = "127.0.0.1:11434";
+              };
+            };
+          };
+
+          launchd.agents.ollama-opencode-proxy = {
+            enable = true;
+            config = {
+              ProgramArguments = [
+                "${pkgs.nodejs}/bin/node"
+                "/Users/${username}/.config/opencode/ollama-opencode-proxy.js"
+              ];
+              RunAtLoad = true;
+              KeepAlive = true;
+              WorkingDirectory = "/Users/${username}";
+              StandardOutPath = "/Users/${username}/Library/Logs/ollama-opencode-proxy.log";
+              StandardErrorPath = "/Users/${username}/Library/Logs/ollama-opencode-proxy.error.log";
+              EnvironmentVariables = {
+                HOME = "/Users/${username}";
+                OLLAMA_UPSTREAM = "http://127.0.0.1:11434";
+                OLLAMA_OPENCODE_PROXY_HOST = "127.0.0.1";
+                OLLAMA_OPENCODE_PROXY_PORT = "11435";
+                PATH = "${pkgs.nodejs}/bin:${pkgs.coreutils}/bin:${pkgs.bash}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
               };
             };
           };

@@ -37,7 +37,8 @@
     "@tarquinen/opencode-dcp@latest",
     "./plugins/auto-recall.ts",
     "./plugins/auto-explore.ts",
-    "./plugins/graphify.js"
+    "./plugins/graphify.js",
+    "./plugins/claude-auth.ts"
   ],
   "permission": "allow",
   "mcp": {

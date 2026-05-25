@@ -1,11 +1,15 @@
 SHELL := /bin/bash
 
-FLAKE ?= $(HOME)/.config/nix-darwin
+FLAKE ?= $(HOME)/.config/my-setup
+FLAKE_REF ?= path:$(FLAKE)
 NIX_INSTALLER_URL ?= https://install.determinate.systems/nix
 NIX_PROFILE ?= /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 NIX_CMD = nix --extra-experimental-features 'nix-command flakes'
 NIX_FORMATTER ?= nixpkgs\#nixfmt
-NIX_FILES = $(FLAKE)/flake.nix $(wildcard $(FLAKE)/modules/*.nix)
+NIX_FILES = \
+	$(FLAKE)/flake.nix \
+	$(wildcard $(FLAKE)/flake-*.nix) \
+	$(wildcard $(FLAKE)/modules/*/*.nix)
 
 .PHONY: help bootstrap install-clt install-nix fmt check check-nix switch system-switch home-switch update audit
 
@@ -49,30 +53,34 @@ check: check-nix
 
 check-nix:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
-	$(NIX_CMD) flake check $(FLAKE)
+	$(NIX_CMD) flake check $(FLAKE_REF); \
+	$(NIX_CMD) eval $(FLAKE_REF)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath --raw >/dev/null; \
+	$(NIX_CMD) eval $(FLAKE_REF)#homeConfigurations.medidrive.activationPackage.drvPath --raw >/dev/null
 
 switch: system-switch
 
 system-switch:
 	@if command -v darwin-rebuild >/dev/null 2>&1; then \
-		darwin-rebuild switch --flake $(FLAKE); \
+		darwin-rebuild switch --flake $(FLAKE_REF); \
 	else \
 		if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
-		$(NIX_CMD) run github:nix-darwin/nix-darwin/master#darwin-rebuild -- switch --flake $(FLAKE); \
+		$(NIX_CMD) run github:nix-darwin/nix-darwin/master#darwin-rebuild -- switch --flake $(FLAKE_REF); \
 	fi
 
 home-switch: system-switch
 
 update:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
-	$(NIX_CMD) flake update --flake $(FLAKE)
+	$(NIX_CMD) flake update --flake $(FLAKE_REF)
 
 audit:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
+	set -e; \
 	printf '%s\n' '== nix parse =='; \
 	for file in $(NIX_FILES); do nix-instantiate --parse "$$file" >/dev/null; done; \
 	printf '%s\n' '== nix eval =='; \
-	$(NIX_CMD) eval $(FLAKE)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath --raw >/dev/null; \
+	$(NIX_CMD) eval $(FLAKE_REF)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath --raw >/dev/null; \
+	$(NIX_CMD) eval $(FLAKE_REF)#homeConfigurations.medidrive.activationPackage.drvPath --raw >/dev/null; \
 	printf '%s\n' '== opencode startup =='; \
 	opencode debug startup --print-logs --log-level DEBUG >/dev/null; \
 	printf '%s\n' '== opencode plugin state =='; \

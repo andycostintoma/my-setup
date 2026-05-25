@@ -2,7 +2,7 @@
 
 ## Scope
 
-These instructions apply to this entire `nix-darwin` configuration repository.
+These instructions apply to this entire `my-setup` configuration repository.
 
 ## Source Of Truth
 
@@ -21,7 +21,7 @@ These instructions apply to this entire `nix-darwin` configuration repository.
 - Apply the config: `make switch`
 - Run local health checks: `make audit`
 - Validate the flake: `nix flake check`
-- Apply system and Home Manager changes: `darwin-rebuild switch --flake ~/.config/nix-darwin`
+- Apply system and Home Manager changes: `darwin-rebuild switch --flake ~/.config/my-setup`
 - Update inputs: `nix flake update`
 
 ## Editing Rules

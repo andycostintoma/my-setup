@@ -1,4 +1,4 @@
-{ username, systemPackages }:
+{ username, packages }:
 
 { pkgs, ... }:
 {
@@ -27,7 +27,7 @@
   security.sudo.extraConfig = ''
     ${username} ALL=(root) NOPASSWD:SETENV: ${pkgs.opencode}/bin/opencode
   '';
-  environment.systemPackages = systemPackages pkgs;
+  environment.systemPackages = packages pkgs;
 
   services.tailscale.enable = true;
 

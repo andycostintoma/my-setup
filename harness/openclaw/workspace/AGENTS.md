@@ -1,6 +1,6 @@
 # AGENTS.md - Claudiu Workspace
 
-This workspace is managed from Nix. Stable identity, policy, tools notes, and shared skills live under `harness/` in `/Users/andytoma/.config/nix-darwin` and are published by Home Manager.
+This workspace is managed from Nix. Stable identity, policy, tools notes, and shared skills live under `harness/` in `/Users/andytoma/.config/my-setup` and are published by Home Manager.
 
 ## Startup
 

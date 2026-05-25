@@ -4,7 +4,7 @@ Skills define how tools work. This file is for stable local conventions that sho
 
 ## Nix Rule
 
-Durable tool, skill, command, package, or assistant configuration changes go through `/Users/andytoma/.config/nix-darwin`.
+Durable tool, skill, command, package, or assistant configuration changes go through `/Users/andytoma/.config/my-setup`.
 
 Do not install global tools with Homebrew, npm, Go, Cargo, pip, pipx, uv tools, or curl installers unless Andy explicitly approves an exception.
 

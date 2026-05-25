@@ -2,7 +2,7 @@
 
 Shared local infrastructure that supports multiple AI agent harnesses. Each harness has its own `SETUP.md` for harness-specific wiring; this doc covers the components that all of them can plug into.
 
-Canonical source: `~/.config/nix-darwin/harness/shared/LOCAL-STACK.md`. Home Manager publishes this file into each harness root.
+Canonical source: `~/.config/my-setup/harness/shared/LOCAL-STACK.md`. Home Manager publishes this file into each harness root.
 
 ## Components
 

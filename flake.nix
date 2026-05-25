@@ -1,5 +1,5 @@
 {
-  description = "Andy Toma's minimal Nix, Home Manager, nix-darwin, and direnv setup";
+  description = "Andy Toma's personal and work machine setup";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -10,46 +10,45 @@
   };
 
   outputs =
-    { nix-darwin, home-manager, ... }:
+    {
+      nix-darwin,
+      home-manager,
+      nixpkgs,
+      ...
+    }:
     let
       username = "andytoma";
       host = "Andys-Mac-mini";
-      packages = import ./modules/packages.nix;
+      medidriveUsername = "andy";
+      medidriveSystem = "x86_64-linux";
+      sharedPackages = import ./modules/shared/packages.nix;
       harness = {
         shared = ./harness/shared;
         openclaw = ./harness/openclaw;
         opencode = ./harness/opencode;
       };
-
-      homeModule = import ./modules/home.nix {
-        inherit username harness;
-        inherit (packages)
-          kimaki
-          openclawUnhardlinked
-          openviking
-          userPackages
+    in
+    {
+      darwinConfigurations = import ./flake-personal.nix {
+        inherit
+          nix-darwin
+          home-manager
+          username
+          host
+          harness
+          sharedPackages
           ;
       };
 
-      darwinModule = import ./modules/darwin.nix {
-        inherit username;
-        inherit (packages) systemPackages;
-      };
-
-    in
-    {
-      darwinConfigurations.${host} = nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        modules = [
-          darwinModule
-          home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "before-nix-darwin";
-            home-manager.users.${username} = homeModule;
-          }
-        ];
+      homeConfigurations = import ./flake-medidrive.nix {
+        inherit
+          home-manager
+          nixpkgs
+          harness
+          sharedPackages
+          ;
+        username = medidriveUsername;
+        system = medidriveSystem;
       };
     };
 }

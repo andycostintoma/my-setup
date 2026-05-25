@@ -1,11 +1,11 @@
+{ sharedPackages }:
+
 rec {
-  # Plain nixpkgs packages: these update with `nix flake update`.
-  userPackagesFromNixpkgs =
+  inherit (sharedPackages) openviking;
+
+  userFromNixpkgs =
     pkgs: with pkgs; [
       atlas
-      claude-code
-      curl
-      docker-compose
       ffmpeg
       graphviz
       mermaid-cli
@@ -13,28 +13,17 @@ rec {
       msmtp
       mutt
       nextdns
-      nodejs
-      bun
       ollama
-      opencode
       pandoc
       pgcli
       poppler-utils
-      ripgrep
-      rtk
       p7zip
       tesseract
-      tmux
-      tree
-      ty
-      uv
-      watch
-      wget
       yt-dlp
       python3Packages.youtube-transcript-api
     ];
 
-  systemPackagesFromNixpkgs =
+  systemFromNixpkgs =
     pkgs: with pkgs; [
       discord
       ghostty-bin
@@ -55,7 +44,7 @@ rec {
       zoom-us
     ];
 
-  # Local packages: not available from nixpkgs for this Mac, or need custom wrapping.
+  # Personal-only local packages.
   microsoftEdge =
     pkgs:
     pkgs.stdenvNoCC.mkDerivation {
@@ -142,47 +131,6 @@ rec {
       '';
     };
 
-  # OpenViking's PyPI wheel carries native Rust/C++ artifacts and Python
-  # dependencies that are not all packaged in nixpkgs yet. Keep this as the
-  # one documented package-manager shim exception: Nix provides uv/uvx and
-  # the invoked OpenViking version is pinned here.
-  openviking =
-    pkgs:
-    let
-      version = "0.3.17";
-      uvxOpenViking = "${pkgs.uv}/bin/uvx --from openviking==${version}";
-    in
-    pkgs.runCommand "openviking-${version}" { } ''
-      mkdir -p $out/bin $out/hook-bin
-
-      cat > $out/bin/ov <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} ov "$@"
-      EOF
-
-      cat > $out/bin/openviking <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} openviking "$@"
-      EOF
-
-      cat > $out/bin/openviking-server <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} openviking-server "$@"
-      EOF
-
-      cat > $out/bin/vikingbot <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} vikingbot "$@"
-      EOF
-
-      cat > $out/hook-bin/python3 <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} python "$@"
-      EOF
-
-      chmod +x $out/bin/ov $out/bin/openviking $out/bin/openviking-server $out/bin/vikingbot $out/hook-bin/python3
-    '';
-
   # Kimaki is not packaged in nixpkgs yet. Keep it pinned and invoked through
   # Nix-provided Node/npm tooling; do not install it globally with npm.
   kimaki =
@@ -201,18 +149,18 @@ rec {
       chmod +x $out/bin/kimaki
     '';
 
-  userPackages =
+  user =
     pkgs:
-    userPackagesFromNixpkgs pkgs
+    sharedPackages.common pkgs
+    ++ userFromNixpkgs pkgs
     ++ [
       (kimaki pkgs)
       (openclawUnhardlinked pkgs)
-      (openviking pkgs)
     ];
 
-  systemPackages =
+  system =
     pkgs:
-    systemPackagesFromNixpkgs pkgs
+    systemFromNixpkgs pkgs
     ++ [
       (kumospace pkgs)
       (microsoftEdge pkgs)

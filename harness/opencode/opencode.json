@@ -36,7 +36,8 @@
     "openrtk",
     "@tarquinen/opencode-dcp@latest",
     "./plugins/auto-recall.ts",
-    "./plugins/auto-explore.ts"
+    "./plugins/auto-explore.ts",
+    "./plugins/graphify.js"
   ],
   "permission": "allow",
   "mcp": {

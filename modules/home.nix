@@ -28,7 +28,7 @@ let
 in
 {
   imports = [
-    (import ../shared/opencode.nix {
+    (import ./opencode.nix {
       inherit homeDirectory harness;
     })
   ];

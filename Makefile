@@ -8,8 +8,7 @@ NIX_CMD = nix --extra-experimental-features 'nix-command flakes'
 NIX_FORMATTER ?= nixpkgs\#nixfmt
 NIX_FILES = \
 	$(FLAKE)/flake.nix \
-	$(wildcard $(FLAKE)/flake-*.nix) \
-	$(wildcard $(FLAKE)/modules/*/*.nix)
+	$(wildcard $(FLAKE)/modules/*.nix)
 
 .PHONY: help bootstrap install-clt install-nix fmt check check-nix switch system-switch home-switch update audit
 
@@ -54,8 +53,7 @@ check: check-nix
 check-nix:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
 	$(NIX_CMD) flake check $(FLAKE_REF); \
-	$(NIX_CMD) eval $(FLAKE_REF)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath --raw >/dev/null; \
-	$(NIX_CMD) eval $(FLAKE_REF)#homeConfigurations.medidrive.activationPackage.drvPath --raw >/dev/null
+	$(NIX_CMD) eval $(FLAKE_REF)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath --raw >/dev/null
 
 switch: system-switch
 
@@ -80,7 +78,6 @@ audit:
 	for file in $(NIX_FILES); do nix-instantiate --parse "$$file" >/dev/null; done; \
 	printf '%s\n' '== nix eval =='; \
 	$(NIX_CMD) eval $(FLAKE_REF)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath --raw >/dev/null; \
-	$(NIX_CMD) eval $(FLAKE_REF)#homeConfigurations.medidrive.activationPackage.drvPath --raw >/dev/null; \
 	printf '%s\n' '== opencode startup =='; \
 	opencode debug startup --print-logs --log-level DEBUG >/dev/null; \
 	printf '%s\n' '== opencode plugin state =='; \

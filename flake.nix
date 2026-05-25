@@ -1,5 +1,5 @@
 {
-  description = "Andy Toma's personal and work machine setup";
+  description = "Andy Toma's personal Mac setup";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -13,42 +13,45 @@
     {
       nix-darwin,
       home-manager,
-      nixpkgs,
       ...
     }:
     let
       username = "andytoma";
       host = "Andys-Mac-mini";
-      medidriveUsername = "andy";
-      medidriveSystem = "x86_64-linux";
-      sharedPackages = import ./modules/shared/packages.nix;
+      commonPackages = import ./modules/common-packages.nix;
+      packages = import ./modules/packages.nix { inherit commonPackages; };
       harness = {
         shared = ./harness/shared;
         openclaw = ./harness/openclaw;
         opencode = ./harness/opencode;
       };
-    in
-    {
-      darwinConfigurations = import ./flake-personal.nix {
-        inherit
-          nix-darwin
-          home-manager
-          username
-          host
-          harness
-          sharedPackages
+      homeModule = import ./modules/home.nix {
+        inherit username harness;
+        packages = packages.user;
+        inherit (packages)
+          kimaki
+          openclawUnhardlinked
+          openviking
           ;
       };
-
-      homeConfigurations = import ./flake-medidrive.nix {
-        inherit
-          home-manager
-          nixpkgs
-          harness
-          sharedPackages
-          ;
-        username = medidriveUsername;
-        system = medidriveSystem;
+      darwinModule = import ./modules/darwin.nix {
+        inherit username;
+        packages = packages.system;
+      };
+    in
+    {
+      darwinConfigurations.${host} = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [
+          darwinModule
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "before-my-setup";
+            home-manager.users.${username} = homeModule;
+          }
+        ];
       };
     };
 }

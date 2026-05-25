@@ -1,7 +1,7 @@
-{ sharedPackages }:
+{ commonPackages }:
 
 rec {
-  inherit (sharedPackages) openviking;
+  inherit (commonPackages) openviking;
 
   userFromNixpkgs =
     pkgs: with pkgs; [
@@ -151,7 +151,7 @@ rec {
 
   user =
     pkgs:
-    sharedPackages.common pkgs
+    commonPackages.common pkgs
     ++ userFromNixpkgs pkgs
     ++ [
       (kimaki pkgs)

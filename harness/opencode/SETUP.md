@@ -73,7 +73,7 @@ Enabled plugins are configured in `opencode.json` under `plugin`. Local implemen
 
 | Plugin | Purpose |
 |---|---|
-| `openviking-opencode` | OpenViking integration |
+| `./plugins/openviking-context.js` | injects indexed OpenViking repositories into the system prompt |
 | `openrtk` | wraps bash tool execution to run `rtk rewrite` |
 | `@tarquinen/opencode-dcp@latest` | provides the `compress` tool |
 | `./plugins/auto-recall.ts` | injects relevant OpenViking memories into the system prompt |

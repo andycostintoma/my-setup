@@ -1,6 +1,7 @@
 {
   homeDirectory,
   harness,
+  opencodeConfig ? harness.opencode + "/opencode.json",
 }:
 
 { pkgs, lib, ... }:
@@ -51,7 +52,7 @@ in
     {"url":"http://127.0.0.1:1933"}
   '';
 
-  home.file.".config/opencode/opencode.json" = managed (harness.opencode + "/opencode.json");
+  home.file.".config/opencode/opencode.json" = managed opencodeConfig;
   home.file.".config/opencode/settings.json" = managed (harness.opencode + "/settings.json");
   home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
   home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");

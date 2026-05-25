@@ -32,7 +32,7 @@
     }
   },
   "plugin": [
-    "openviking-opencode",
+    "./plugins/openviking-context.js",
     "openrtk",
     "@tarquinen/opencode-dcp@latest",
     "./plugins/auto-recall.ts",

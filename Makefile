@@ -4,8 +4,10 @@ FLAKE ?= $(HOME)/.config/nix-darwin
 NIX_INSTALLER_URL ?= https://install.determinate.systems/nix
 NIX_PROFILE ?= /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 NIX_CMD = nix --extra-experimental-features 'nix-command flakes'
+NIX_FORMATTER ?= nixpkgs\#nixfmt
+NIX_FILES = $(FLAKE)/flake.nix $(wildcard $(FLAKE)/modules/*.nix)
 
-.PHONY: help bootstrap install-clt install-nix check check-nix switch system-switch home-switch update audit
+.PHONY: help bootstrap install-clt install-nix fmt check check-nix switch system-switch home-switch update audit
 
 help:
 	@printf '%s\n' \
@@ -13,6 +15,7 @@ help:
 		'  make bootstrap      Install pre-Nix prerequisites, then apply the flake' \
 		'  make install-clt    Install Apple Command Line Tools if missing' \
 		'  make install-nix    Install Nix if missing' \
+		'  make fmt            Format Nix files' \
 		'  make check          Validate the flake' \
 		'  make switch         Apply system and Home Manager config' \
 		'  make system-switch  Apply nix-darwin system config' \
@@ -37,6 +40,10 @@ install-nix:
 		printf '%s\n' 'Installing Nix with the Determinate Systems installer.'; \
 		curl --proto '=https' --tlsv1.2 -sSf -L $(NIX_INSTALLER_URL) | sh -s -- install; \
 	fi
+
+fmt:
+	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
+	$(NIX_CMD) run '$(NIX_FORMATTER)' -- $(NIX_FILES)
 
 check: check-nix
 
@@ -63,7 +70,7 @@ update:
 audit:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
 	printf '%s\n' '== nix parse =='; \
-	nix-instantiate --parse $(FLAKE)/flake.nix >/dev/null; \
+	for file in $(NIX_FILES); do nix-instantiate --parse "$$file" >/dev/null; done; \
 	printf '%s\n' '== nix eval =='; \
 	$(NIX_CMD) eval $(FLAKE)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath --raw >/dev/null; \
 	printf '%s\n' '== opencode startup =='; \

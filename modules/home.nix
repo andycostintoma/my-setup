@@ -467,6 +467,18 @@ in
     chmod 0600 "$password_file"
   '';
 
+  home.activation.setDefaultBrowser = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    set -eu
+
+    # Set Google Chrome as the default browser for http/https if it is not already.
+    # `defaultbrowser` identifies Chrome by the short token "chrome".
+    if ${pkgs.defaultbrowser}/bin/defaultbrowser | grep -q '^\* chrome$'; then
+      : # Chrome is already the default; nothing to do.
+    else
+      ${pkgs.defaultbrowser}/bin/defaultbrowser chrome
+    fi
+  '';
+
   launchd.agents.ollama = {
     enable = true;
     config = {

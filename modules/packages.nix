@@ -6,6 +6,7 @@ rec {
   userFromNixpkgs =
     pkgs: with pkgs; [
       atlas
+      defaultbrowser
       ffmpeg
       graphviz
       mermaid-cli

@@ -1,7 +1,6 @@
 ---
 description: Auto-routing build agent (OpenAI ladder). Classifies each task into small/medium/high and dispatches to the matching OpenAI subagent (GPT-5.4 mini / GPT-5.4 / GPT-5.5). Use when you want cost-aware routing across OpenAI models without manually picking a tier.
 mode: primary
-disable: true
 model: openai/gpt-5.4-mini
 temperature: 0.1
 reasoningEffort: low

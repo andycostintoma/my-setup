@@ -1,7 +1,6 @@
 ---
 description: Auto-routing build agent (Anthropic ladder). Classifies each task into small/medium/high and dispatches to the matching Anthropic subagent (Haiku 4.5 / Sonnet 4.6 / Opus 4.7). Use when you want cost-aware routing across Anthropic models without manually picking a tier.
 mode: primary
-disable: true
 model: anthropic/claude-haiku-4-5
 temperature: 0.1
 permission:

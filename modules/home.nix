@@ -317,6 +317,9 @@ in
       Host *
         UseKeychain yes
         AddKeysToAgent yes
+        # macOS 15 /usr/bin/ssh ships with a broken compiled-in default of
+        # UserKnownHostsFile=/var/root/.ssh/known_hosts; pin it back to ~/.ssh/known_hosts.
+        UserKnownHostsFile ~/.ssh/known_hosts
 
       # MediDrive GitHub repositories - use work key
       Host github.com-medidrive

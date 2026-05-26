@@ -1,6 +1,6 @@
 { username, packages }:
 
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   nixpkgs.config = {
     allowUnfree = true;
@@ -28,6 +28,19 @@
     ${username} ALL=(root) NOPASSWD:SETENV: ${pkgs.opencode}/bin/opencode
   '';
   environment.systemPackages = packages pkgs;
+  system.activationScripts.applications.text = lib.mkAfter ''
+    echo "setting up /Applications/WhatsApp.app..." >&2
+    ${lib.getExe pkgs.rsync} \
+      --checksum \
+      --copy-unsafe-links \
+      --archive \
+      --delete \
+      --chmod=-w \
+      --no-group \
+      --no-owner \
+      ${pkgs.whatsapp-for-mac}/Applications/WhatsApp.app/ \
+      /Applications/WhatsApp.app
+  '';
 
   services.tailscale.enable = true;
 

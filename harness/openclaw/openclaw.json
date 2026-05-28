@@ -4,14 +4,14 @@
       "model": {
         "fallbacks": [
           "openai/gpt-5.5",
-          "qwen/qwen3.5-9b-local"
+          "qwen/qwen3.5:9b"
         ],
         "primary": "openai-codex/gpt-5.5"
       },
       "models": {
         "openai-codex/gpt-5.5": {},
         "openai/gpt-5.5": {},
-        "qwen/qwen3.5-9b-local": {}
+        "qwen/qwen3.5:9b": {}
       },
       "skills": [
         "openviking",
@@ -120,16 +120,23 @@
         ]
       },
       "qwen": {
-        "api": "openai-responses",
-        "baseUrl": "http://localhost:8000/v1",
+        "api": "ollama",
+        "apiKey": "ollama-local",
+        "baseUrl": "http://127.0.0.1:11434",
         "models": [
           {
-            "api": "openai-responses",
-            "id": "qwen3.5-9b-local",
+            "api": "ollama",
+            "id": "qwen3.5:9b",
             "input": [
               "text"
             ],
-            "name": "Qwen 3.5 9B Local"
+            "name": "Qwen 3.5 9B Local",
+            "params": {
+              "keep_alive": "15m",
+              "num_ctx": 32768,
+              "thinking": false
+            },
+            "reasoning": true
           }
         ]
       }

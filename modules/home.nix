@@ -318,21 +318,29 @@ in
         UseKeychain yes
         AddKeysToAgent yes
         # macOS 15 /usr/bin/ssh ships with a broken compiled-in default of
-        # UserKnownHostsFile=/var/root/.ssh/known_hosts; pin it back to ~/.ssh/known_hosts.
-        UserKnownHostsFile ~/.ssh/known_hosts
+        # UserKnownHostsFile=/var/root/.ssh/known_hosts; pin it back to the user's known_hosts.
+        UserKnownHostsFile /Users/${username}/.ssh/known_hosts
 
       # MediDrive GitHub repositories - use work key
       Host github.com-medidrive
         HostName github.com
         User git
-        IdentityFile ~/.ssh/medidrive_key
+        IdentityFile /Users/${username}/.ssh/medidrive_key
         IdentitiesOnly yes
+
+      # MediDrive development VM
+      Host medidrive-vm
+        HostName 35.243.44.225
+        User andy
+        IdentityFile /Users/${username}/.ssh/medidrive_key
+        IdentitiesOnly yes
+        UserKnownHostsFile /Users/${username}/.ssh/known_hosts
 
       # Personal GitHub - use personal key (default)
       Host github.com
         HostName github.com
         User git
-        IdentityFile ~/.ssh/personal_key
+        IdentityFile /Users/${username}/.ssh/personal_key
         IdentitiesOnly yes
     '';
   };
@@ -687,11 +695,10 @@ in
       plugins = [ "git" ];
     };
     shellAliases = {
-      medidrive = "ssh -i ~/.ssh/medidrive_key -o IdentitiesOnly=yes -t andy@35.243.44.225 'cd ~/medidrive && exec $SHELL -l'";
-      medidrive-sync = "rsync -az --delete -e 'ssh -i ~/.ssh/medidrive_key -o IdentitiesOnly=yes' andy@35.243.44.225:~/medidrive/ ~/medidrive-local/";
+      medidrive = "ssh -t medidrive-vm 'cd ~/medidrive && exec $SHELL -l'";
+      medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
       hm-switch = "home-manager switch --flake ~/.config/my-setup";
       nix-switch = "make -C ~/.config/my-setup switch";
-      opencode = "sudo -E ${pkgs.opencode}/bin/opencode";
     };
     initContent = ''
       medidrive-upload() {

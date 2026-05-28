@@ -5,3 +5,4 @@ result-*
 .envrc
 .direnv/
 .DS_Store
+.playwright-mcp/

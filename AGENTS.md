@@ -24,6 +24,10 @@ These instructions apply to this entire `my-setup` configuration repository.
 - Apply system and Home Manager changes: `darwin-rebuild switch --flake ~/.config/my-setup`
 - Update inputs: `nix flake update`
 
+## Privileged Commands
+
+- When sudo access is needed, use the macOS administrator prompt via `osascript ... with administrator privileges` instead of asking the user to copy-paste commands into another terminal.
+
 ## Editing Rules
 
 - Prefer small, direct changes in `flake.nix` over adding new files or abstractions.

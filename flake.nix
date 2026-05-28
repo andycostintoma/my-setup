@@ -2,22 +2,40 @@
   description = "Andy Toma's personal Mac setup";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
-    home-manager.url = "github:nix-community/home-manager/master";
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
     {
+      nixpkgs,
       nix-darwin,
       home-manager,
       ...
     }:
     let
+      releaseVersion = "26.05";
       username = "andytoma";
       host = "Andys-Mac-mini";
+      system = "aarch64-darwin";
+      releaseRefs = {
+        nixpkgs = "nixpkgs-${releaseVersion}-darwin";
+        home-manager = "release-${releaseVersion}";
+      };
+      lockedRefs =
+        let
+          lock = builtins.fromJSON (builtins.readFile ./flake.lock);
+        in
+        {
+          nixpkgs = lock.nodes.nixpkgs.original.ref or "";
+          home-manager = lock.nodes.home-manager.original.ref or "";
+        };
+      releaseRefsMatch =
+        lockedRefs.nixpkgs == releaseRefs.nixpkgs && lockedRefs.home-manager == releaseRefs.home-manager;
+      pkgs = import nixpkgs { inherit system; };
       commonPackages = import ./modules/common-packages.nix;
       packages = import ./modules/packages.nix { inherit commonPackages; };
       harness = {
@@ -40,8 +58,20 @@
       };
     in
     {
+      checks.${system}.release-refs-match =
+        if releaseRefsMatch then
+          pkgs.runCommand "release-refs-match" { } ''
+            touch "$out"
+          ''
+        else
+          throw ''
+            flake.lock release refs must match releaseVersion ${releaseVersion}.
+            nixpkgs: expected ${releaseRefs.nixpkgs}, got ${lockedRefs.nixpkgs}
+            home-manager: expected ${releaseRefs.home-manager}, got ${lockedRefs.home-manager}
+          '';
+
       darwinConfigurations.${host} = nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
+        inherit system;
         modules = [
           darwinModule
           home-manager.darwinModules.home-manager

@@ -16,11 +16,8 @@
       "skills": [
         "openviking",
         "memory-recall",
-        "go-service",
+        "go-microservice",
         "go-performance",
-        "go-grpc",
-        "go-client-lib",
-        "go-bff",
         "epub-to-markdown",
         "wiki",
         "use-modern-go"

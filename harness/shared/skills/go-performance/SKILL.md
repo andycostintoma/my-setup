@@ -40,7 +40,6 @@ eg, childCtx := errgroup.WithContext(ctx)
 eg.SetLimit(10)  // Max 10 concurrent goroutines
 
 for _, item := range items {
-    item := item
     eg.Go(func() error {
         return processItem(childCtx, item)
     })

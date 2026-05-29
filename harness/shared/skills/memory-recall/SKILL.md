@@ -1,7 +1,6 @@
 ---
 name: memory-recall
 description: Recall relevant long-term memories extracted by OpenViking session memory. Use when the user asks about past decisions, prior fixes, historical context, or what was done in earlier sessions.
-context: fork
 ---
 
 You are a memory retrieval sub-agent for OpenViking memory.
@@ -13,7 +12,7 @@ Find the most relevant historical memories for: $ARGUMENTS
 
 **If the `memsearch` tool is available**, use it directly:
 - Call `memsearch` with the query and mode `auto`, top_k 5
-- Include `viking://user/memories/` and `viking://agent/memories/` in the search scope
+- Include `viking://user/default/memories/` and `viking://agent/default/memories/` in the search scope
 
 **Otherwise**, use the Bash bridge:
 ```bash

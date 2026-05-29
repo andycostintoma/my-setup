@@ -419,6 +419,42 @@ in
     '';
   };
 
+  home.file.".local/bin/openchamber-server" = {
+    executable = true;
+    text = ''
+      #!${pkgs.runtimeShell}
+      set -eu
+
+      password_file="$HOME/.secrets/opencode/web-password"
+      if [ ! -s "$password_file" ]; then
+        printf 'Missing OpenChamber UI password file: %s\n' "$password_file" >&2
+        exit 1
+      fi
+
+      export HOME="/Users/${username}"
+      export OPENCHAMBER_HOST="0.0.0.0"
+      export OPENCHAMBER_UI_PASSWORD="$(cat "$password_file")"
+      export OPENCHAMBER_OPENCODE_HOSTNAME="127.0.0.1"
+      export PATH="${
+        lib.makeBinPath (
+          packages pkgs
+          ++ [
+            pkgs.bash
+            pkgs.coreutils
+            pkgs.git
+            pkgs.nodejs
+            pkgs.bun
+          ]
+        )
+      }:/usr/bin:/bin:/usr/sbin:/sbin"
+
+      exec openchamber serve \
+        --host 0.0.0.0 \
+        --port 3000 \
+        --foreground
+    '';
+  };
+
   home.file.".local/bin/kimaki-server" = {
     executable = true;
     text = ''
@@ -578,7 +614,7 @@ in
   };
 
   launchd.agents.opencode-web = {
-    enable = true;
+    enable = false;
     config = {
       ProgramArguments = [
         "/Users/${username}/.local/bin/opencode-web-server"
@@ -588,6 +624,23 @@ in
       WorkingDirectory = "/Users/${username}";
       StandardOutPath = "/Users/${username}/Library/Logs/opencode-web.log";
       StandardErrorPath = "/Users/${username}/Library/Logs/opencode-web.error.log";
+      EnvironmentVariables = {
+        HOME = "/Users/${username}";
+      };
+    };
+  };
+
+  launchd.agents.openchamber = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "/Users/${username}/.local/bin/openchamber-server"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      WorkingDirectory = "/Users/${username}";
+      StandardOutPath = "/Users/${username}/Library/Logs/openchamber.log";
+      StandardErrorPath = "/Users/${username}/Library/Logs/openchamber.error.log";
       EnvironmentVariables = {
         HOME = "/Users/${username}";
       };
@@ -701,6 +754,8 @@ in
       nix-switch = "make -C ~/.config/my-setup switch";
     };
     initContent = ''
+      path=("${homeDirectory}/Library/Application Support/JetBrains/Toolbox/scripts" $path)
+
       medidrive-upload() {
         if [ "$#" -ne 2 ]; then
           printf 'usage: medidrive-upload SOURCE DEST\n' >&2

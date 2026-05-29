@@ -1,5 +1,8 @@
 { commonPackages }:
 
+let
+  pins = import ./pins.nix;
+in
 rec {
   inherit (commonPackages) openviking;
 
@@ -49,12 +52,11 @@ rec {
     pkgs:
     pkgs.stdenvNoCC.mkDerivation {
       pname = "microsoft-edge";
-      version = "148.0.3967.70";
+      version = pins.microsoftEdge.version;
 
       src = pkgs.fetchurl {
-        name = "MicrosoftEdge-148.0.3967.70.pkg";
-        url = "https://go.microsoft.com/fwlink/?linkid=2093504";
-        hash = "sha256-OITrGxN1VtXvb7A0c2mXjQdNHt13tx/nJpPib2WlO0M=";
+        name = "MicrosoftEdge-${pins.microsoftEdge.version}.pkg";
+        inherit (pins.microsoftEdge) url hash;
       };
 
       nativeBuildInputs = with pkgs; [
@@ -102,12 +104,11 @@ rec {
     pkgs:
     pkgs.stdenvNoCC.mkDerivation {
       pname = "kumospace";
-      version = "6.1.0";
+      version = pins.kumospace.version;
 
       src = pkgs.fetchurl {
-        name = "Kumospace-6.1.0.dmg";
-        url = "https://downloads.kumospace.com/production/macos/universal/latest/Kumospace.dmg";
-        hash = "sha256-wOf4dabEIsJd5yHWXwlA/+lSrvz6ijVvZHLvswNZSas=";
+        name = "Kumospace-${pins.kumospace.version}.dmg";
+        inherit (pins.kumospace) url hash;
       };
 
       nativeBuildInputs = with pkgs; [
@@ -174,7 +175,7 @@ rec {
   kimaki =
     pkgs:
     let
-      version = "0.12.0";
+      version = pins.kimaki.version;
     in
     pkgs.runCommand "kimaki-${version}" { } ''
       mkdir -p $out/bin
@@ -187,6 +188,45 @@ rec {
       chmod +x $out/bin/kimaki
     '';
 
+  # OpenChamber is not packaged in nixpkgs yet. Keep the CLI pinned and run it
+  # through Nix-provided Node/npm tooling without a global npm install.
+  openchamber =
+    pkgs:
+    let
+      version = pins.openchamber.version;
+    in
+    pkgs.runCommand "openchamber-${version}" { } ''
+      mkdir -p $out/bin
+
+      cat > $out/bin/openchamber <<'EOF'
+      #!${pkgs.runtimeShell}
+      exec ${pkgs.nodejs}/bin/npx -y @openchamber/web@${version} "$@"
+      EOF
+
+      chmod +x $out/bin/openchamber
+    '';
+
+  # Local transcription CLI. Python, faster-whisper, and the entrypoint source
+  # are all managed by this flake.
+  transcriber =
+    pkgs:
+    let
+      python = pkgs.python313.withPackages (ps: [
+        ps.faster-whisper
+      ]);
+      entrypoint = ../tools/transcriber/main.py;
+    in
+    pkgs.runCommand "transcriber-local" { } ''
+      mkdir -p $out/bin
+
+      cat > $out/bin/transcriber <<'EOF'
+      #!${pkgs.runtimeShell}
+      exec ${python}/bin/python ${entrypoint} "$@"
+      EOF
+
+      chmod +x $out/bin/transcriber
+    '';
+
   user =
     pkgs:
     commonPackages.common pkgs
@@ -194,7 +234,9 @@ rec {
     ++ [
       (chromeOpenWrapper pkgs)
       (kimaki pkgs)
+      (openchamber pkgs)
       (openclawUnhardlinked pkgs)
+      (transcriber pkgs)
     ];
 
   system =

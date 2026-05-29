@@ -9,8 +9,18 @@ NIX_FORMATTER ?= nixpkgs\#nixfmt
 NIX_FILES = \
 	$(FLAKE)/flake.nix \
 	$(wildcard $(FLAKE)/modules/*.nix)
+PIN_UPDATE_PACKAGES = \
+	nixpkgs\#curl \
+	nixpkgs\#jq \
+	nixpkgs\#nodejs \
+	nixpkgs\#perl \
+	nixpkgs\#p7zip \
+	nixpkgs\#xar
+RELEASE_UPDATE_PACKAGES = \
+	nixpkgs\#git \
+	nixpkgs\#perl
 
-.PHONY: help bootstrap install-clt install-nix fmt check check-nix switch system-switch home-switch update audit
+.PHONY: help bootstrap install-clt install-nix fmt check check-nix switch system-switch home-switch update update-pins update-all audit
 
 help:
 	@printf '%s\n' \
@@ -23,7 +33,9 @@ help:
 		'  make switch         Apply system and Home Manager config' \
 		'  make system-switch  Apply nix-darwin system config' \
 		'  make home-switch    Apply Home Manager through nix-darwin' \
-		'  make update         Update flake inputs' \
+		'  make update         Update release branch and flake inputs' \
+		'  make update-pins    Update manual package pins and hashes' \
+		'  make update-all     Update flake inputs, pins, and run audit' \
 		'  make audit          Run local Nix/OpenCode hygiene checks'
 
 bootstrap: install-clt install-nix system-switch
@@ -69,7 +81,14 @@ home-switch: system-switch
 
 update:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
+	$(NIX_CMD) shell $(RELEASE_UPDATE_PACKAGES) -c bash $(FLAKE)/tools/update-release-version.sh; \
 	$(NIX_CMD) flake update --flake $(FLAKE_REF)
+
+update-pins:
+	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
+	$(NIX_CMD) shell $(PIN_UPDATE_PACKAGES) -c bash $(FLAKE)/tools/update-pins.sh
+
+update-all: update update-pins audit
 
 audit:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \

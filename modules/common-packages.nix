@@ -1,3 +1,6 @@
+let
+  pins = import ./pins.nix;
+in
 rec {
   commonFromNixpkgs =
     pkgs: with pkgs; [
@@ -31,7 +34,7 @@ rec {
   openviking =
     pkgs:
     let
-      version = "0.3.17";
+      version = pins.openviking.version;
       uvxOpenViking = "${pkgs.uv}/bin/uvx --from openviking==${version}";
     in
     pkgs.runCommand "openviking-${version}" { } ''
@@ -68,7 +71,7 @@ rec {
   graphify =
     pkgs:
     let
-      version = "0.8.18";
+      version = pins.graphifyy.version;
       uvxGraphify = "${pkgs.uv}/bin/uvx --from graphifyy==${version}";
     in
     pkgs.runCommand "graphify-${version}" { } ''

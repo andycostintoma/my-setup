@@ -88,7 +88,7 @@ describe("plugin-config", () => {
     })
 
     it("ignores config without agent field", () => {
-      applyOpencodeConfig({ plugin: ["./plugins/claude-auth/index.ts"] })
+      applyOpencodeConfig({ plugin: ["./plugins/claude-auth/plugin.ts"] })
       assert.equal(getPluginSettings().enable1mContext, undefined)
     })
 

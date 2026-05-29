@@ -82,7 +82,7 @@ Enabled plugins are configured in `opencode.json` under `plugin`. Local implemen
 | `./plugins/automation/auto-recall.ts` | injects relevant OpenViking memories into the system prompt |
 | `./plugins/automation/auto-explore.ts` | auto-spawns the `explore` subagent on search/discovery prompts |
 | `./plugins/automation/sound-notify.ts` | plays Glass.aiff on permission/question events |
-| `./plugins/claude-auth/index.ts` | Claude subscription OAuth provider; reads tokens from macOS Keychain (Mac) or `~/.claude/.credentials.json` (Linux) so Anthropic requests use Claude Max OAuth instead of the static API key in `auth.json`. Required for Opus access on MediDrive accounts where the workspace API key has no Opus quota. |
+| `./plugins/claude-auth/plugin.ts` | Claude subscription OAuth provider; reads tokens from macOS Keychain (Mac) or `~/.claude/.credentials.json` (Linux) so Anthropic requests use Claude Max OAuth instead of the static API key in `auth.json`. Required for Opus access on MediDrive accounts where the workspace API key has no Opus quota. |
 
 ## Services
 

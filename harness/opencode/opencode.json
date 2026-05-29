@@ -10,7 +10,7 @@
     "./plugins/automation/auto-recall.ts",
     "./plugins/automation/auto-explore.ts",
     "./plugins/automation/sound-notify.ts",
-    "./plugins/claude-auth/index.ts"
+    "./plugins/claude-auth/plugin.ts"
   ],
   "permission": "allow",
   "mcp": {

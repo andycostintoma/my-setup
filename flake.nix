@@ -70,6 +70,11 @@
             home-manager: expected ${releaseRefs.home-manager}, got ${lockedRefs.home-manager}
           '';
 
+      packages.${system} = {
+        setupctl = packages.setupctl pkgs;
+        epub-to-markdown = packages.epubToMarkdown pkgs;
+      };
+
       darwinConfigurations.${host} = nix-darwin.lib.darwinSystem {
         inherit system;
         modules = [

@@ -146,14 +146,6 @@ in
         "quarkus.tools.alwaysShowWelcomePage": false,
         "ansible.lightspeed.enabled": true,
         "ansible.lightspeed.suggestions.enabled": true,
-        "[ruby]": {
-          "editor.defaultFormatter": "Shopify.ruby-lsp",
-          "editor.formatOnSave": true,
-          "editor.formatOnType": true,
-          "editor.tabSize": 2,
-          "editor.insertSpaces": true,
-          "editor.semanticHighlighting.enabled": true
-        },
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
         "editor.rulers": [120],
@@ -572,7 +564,8 @@ in
     config = {
       ProgramArguments = [
         "${pkgs.nodejs}/bin/node"
-        "/Users/${username}/.config/opencode/ollama-opencode-proxy.js"
+        "--experimental-strip-types"
+        "/Users/${username}/.config/opencode/services/ollama-proxy.ts"
       ];
       RunAtLoad = true;
       KeepAlive = true;

@@ -1,5 +1,3 @@
-SHELL := /bin/bash
-
 FLAKE ?= $(HOME)/.config/my-setup
 FLAKE_REF ?= path:$(FLAKE)
 NIX_INSTALLER_URL ?= https://install.determinate.systems/nix
@@ -10,15 +8,13 @@ NIX_FILES = \
 	$(FLAKE)/flake.nix \
 	$(wildcard $(FLAKE)/modules/*.nix)
 PIN_UPDATE_PACKAGES = \
-	nixpkgs\#curl \
-	nixpkgs\#jq \
+	nixpkgs\#go \
 	nixpkgs\#nodejs \
-	nixpkgs\#perl \
 	nixpkgs\#p7zip \
 	nixpkgs\#xar
 RELEASE_UPDATE_PACKAGES = \
 	nixpkgs\#git \
-	nixpkgs\#perl
+	nixpkgs\#go
 
 .PHONY: help bootstrap install-clt install-nix fmt check check-nix switch system-switch home-switch update update-pins update-all audit
 
@@ -81,12 +77,12 @@ home-switch: system-switch
 
 update:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
-	$(NIX_CMD) shell $(RELEASE_UPDATE_PACKAGES) -c bash $(FLAKE)/tools/update-release-version.sh; \
+	$(NIX_CMD) shell $(RELEASE_UPDATE_PACKAGES) -c go -C $(FLAKE)/tools/setupctl run . update-release --repo $(FLAKE); \
 	$(NIX_CMD) flake update --flake $(FLAKE_REF)
 
 update-pins:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
-	$(NIX_CMD) shell $(PIN_UPDATE_PACKAGES) -c bash $(FLAKE)/tools/update-pins.sh
+	$(NIX_CMD) shell $(PIN_UPDATE_PACKAGES) -c go -C $(FLAKE)/tools/setupctl run . update-pins --repo $(FLAKE)
 
 update-all: update update-pins audit
 

@@ -22,10 +22,10 @@ Expected output per book:
 
 1. Inspect the target repo for the local note structure you should match.
 2. Decide the destination folder and markdown filename.
-3. Run the bundled cleanup script at `scripts/epub_to_markdown.rb` from this skill directory:
+3. Run the shared Go cleanup command:
 
 ```bash
-ruby "/path/to/active/epub-to-markdown/scripts/epub_to_markdown.rb" \
+epub-to-markdown \
   --src "/absolute/path/to/book.epub" \
   --dest-dir "/absolute/path/to/output/book-folder" \
   --output-name "Book_Name.md" \
@@ -94,7 +94,7 @@ Always verify that the generated note:
 
 ## Editing Rules
 
-- Prefer fixing repeated conversion problems in `scripts/epub_to_markdown.rb`.
+- Prefer fixing repeated conversion problems in `tools/epub-to-markdown/main.go`.
 - Do not leave scratch conversion scripts in the target repo when this shared skill can own the logic.
 - Do not aggressively strip content just to make the file cleaner; preserve body text, headings, images, captions, lists, and callouts unless they are clear EPUB packaging noise.
 

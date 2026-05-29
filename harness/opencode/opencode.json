@@ -3,13 +3,14 @@
   "snapshot": false,
   "provider": {},
   "plugin": [
-    "./plugins/openviking-context.js",
+    "./plugins/openviking/context.ts",
     "openrtk",
     "@tarquinen/opencode-dcp@latest",
-    "./plugins/auto-recall.ts",
-    "./plugins/auto-explore.ts",
-    "./plugins/graphify.js",
-    "./plugins/claude-auth.ts"
+    "./plugins/openviking/memory.ts",
+    "./plugins/automation/auto-recall.ts",
+    "./plugins/automation/auto-explore.ts",
+    "./plugins/automation/sound-notify.ts",
+    "./plugins/claude-auth/index.ts"
   ],
   "permission": "allow",
   "mcp": {

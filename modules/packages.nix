@@ -227,13 +227,34 @@ rec {
       chmod +x $out/bin/transcriber
     '';
 
+  # Personal setup repository maintenance tooling.
+  setupctl =
+    pkgs:
+    pkgs.buildGoModule {
+      pname = "setupctl";
+      version = "0.1.0";
+      src = ../tools/setupctl;
+      vendorHash = null;
+    };
+
+  epubToMarkdown =
+    pkgs:
+    pkgs.buildGoModule {
+      pname = "epub-to-markdown";
+      version = "0.1.0";
+      src = ../tools/epub-to-markdown;
+      vendorHash = null;
+    };
+
   user =
     pkgs:
     commonPackages.common pkgs
     ++ userFromNixpkgs pkgs
     ++ [
       (chromeOpenWrapper pkgs)
+      (epubToMarkdown pkgs)
       (kimaki pkgs)
+      (setupctl pkgs)
       (openchamber pkgs)
       (openclawUnhardlinked pkgs)
       (transcriber pkgs)

@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "@ai-sdk/openai-compatible": "2.0.48",
     "@opencode-ai/plugin": "1.4.10"

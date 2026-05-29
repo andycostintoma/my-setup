@@ -11,12 +11,6 @@ let
     force = true;
   };
 
-  managedExecutable = source: {
-    inherit source;
-    executable = true;
-    force = true;
-  };
-
   mergeHarnessDir =
     name: sources:
     pkgs.runCommand name { } (
@@ -57,14 +51,12 @@ in
   home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
   home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");
   home.file.".config/opencode/node_modules" = managed (opencodeNodeModules + "/node_modules");
-  home.file.".config/opencode/ollama-opencode-proxy.js" = managedExecutable (
-    harness.opencode + "/ollama-opencode-proxy.js"
-  );
+  home.file.".config/opencode/services" = managed (harness.opencode + "/services");
   home.file.".config/opencode/dcp.jsonc" = managed (harness.opencode + "/dcp.jsonc");
   home.file.".config/opencode/agent-ladder.config.json" = managed (
     harness.opencode + "/agent-ladder.config.json"
   );
-  home.file.".config/opencode/SETUP.md" = managed (harness.opencode + "/SETUP.md");
+  home.file.".config/opencode/docs" = managed (harness.opencode + "/docs");
   home.file.".config/opencode/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
   home.file.".config/opencode/scripts" = managed (harness.opencode + "/scripts");
   home.file.".config/opencode/agents" = managed opencodeAgents;
@@ -91,7 +83,7 @@ in
 
     opencode_home="${homeDirectory}/.config/opencode"
     state_dir="${homeDirectory}/.local/state/opencode/openviking"
-    install -d -m 0755 "$opencode_home/plugins" "$opencode_home/vendor" "$state_dir"
+    install -d -m 0755 "$opencode_home/plugins" "$state_dir"
 
     for file in openviking-memory.log openviking-session-map.json; do
       if [ -e "$opencode_home/plugins/$file" ] && [ ! -e "$state_dir/$file" ]; then
@@ -104,6 +96,8 @@ in
       auto-explore.ts \
       auto-recall.ts \
       claude-auth.ts \
+      graphify.ts \
+      openviking-context.ts \
       openviking-config.json \
       openviking-memory.ts \
       rtk.ts \
@@ -112,9 +106,19 @@ in
       rm -f "$opencode_home/plugins/$file" "$opencode_home/plugins/$file.before-my-setup"
     done
 
-    if [ -e "$opencode_home/vendor/opencode-claude-auth" ] || [ -L "$opencode_home/vendor/opencode-claude-auth" ]; then
-      chmod -R u+w "$opencode_home/vendor/opencode-claude-auth" 2>/dev/null || true
-      rm -rf "$opencode_home/vendor/opencode-claude-auth"
+    # The scripts/ directory is managed entirely by home-manager (a Nix-store
+    # symlink), so any stale generate-agent-ladder.mjs is replaced atomically by
+    # linkGeneration. Do not rm inside that read-only symlinked tree.
+    rm -f \
+      "$opencode_home/SETUP.md" \
+      "$opencode_home/ollama-opencode-proxy.js" \
+      "$opencode_home/ollama-opencode-proxy.ts" \
+      "$opencode_home/plugins/graphify.js" \
+      "$opencode_home/plugins/openviking-context.js"
+
+    if [ -e "$opencode_home/vendor" ] || [ -L "$opencode_home/vendor" ]; then
+      chmod -R u+w "$opencode_home/vendor" 2>/dev/null || true
+      rm -rf "$opencode_home/vendor"
     fi
   '';
 
@@ -122,15 +126,12 @@ in
     set -eu
 
     opencode_home="${homeDirectory}/.config/opencode"
-    install -d -m 0755 "$opencode_home/plugins" "$opencode_home/vendor"
+    install -d -m 0755 "$opencode_home/plugins"
 
     # opencode loads TypeScript plugins by real path. Individual Nix-store
     # symlinks break relative imports and node_modules resolution, so copy
     # this source tree while keeping plugin state out of it.
     ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
       ${harness.opencode}/plugins/ "$opencode_home/plugins/"
-    ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
-      ${harness.opencode}/vendor/opencode-claude-auth/ \
-      "$opencode_home/vendor/opencode-claude-auth/"
   '';
 }

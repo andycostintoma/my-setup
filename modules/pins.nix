@@ -4,6 +4,11 @@
 
   kimaki.version = "0.13.0";
   openchamber.version = "1.11.7";
+  openchamberDesktop = {
+    version = "1.11.7";
+    url = "https://github.com/openchamber/openchamber/releases/download/v1.11.7/OpenChamber-1.11.7-mac-arm64.dmg";
+    hash = "sha256-j20OWnfErcZUdYaBpNp6WwJEq7yLaCGFG0AGa6+356I=";
+  };
 
   microsoftEdge = {
     version = "148.0.3967.96";

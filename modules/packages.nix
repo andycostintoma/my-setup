@@ -132,6 +132,38 @@ rec {
       '';
     };
 
+  openchamberDesktop =
+    pkgs:
+    pkgs.stdenvNoCC.mkDerivation {
+      pname = "openchamber-desktop";
+      version = pins.openchamberDesktop.version;
+
+      src = pkgs.fetchurl {
+        name = "OpenChamber-${pins.openchamberDesktop.version}-mac-arm64.dmg";
+        inherit (pins.openchamberDesktop) url hash;
+      };
+
+      nativeBuildInputs = with pkgs; [
+        makeWrapper
+        undmg
+      ];
+
+      sourceRoot = ".";
+      dontConfigure = true;
+      dontBuild = true;
+      dontFixup = true;
+
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out/Applications $out/bin
+        cp -R "OpenChamber.app" $out/Applications/
+        makeWrapper "$out/Applications/OpenChamber.app/Contents/MacOS/OpenChamber" $out/bin/openchamber-desktop
+
+        runHook postInstall
+      '';
+    };
+
   # Wrapper for macOS `open` that forces URLs to open in Google Chrome.
   # OpenCode calls Bun.spawn(["open", url]) directly, bypassing the shell, so
   # the system default-browser setting is what matters. On macOS 13+ changing
@@ -266,5 +298,6 @@ rec {
     ++ [
       (kumospace pkgs)
       (microsoftEdge pkgs)
+      (openchamberDesktop pkgs)
     ];
 }

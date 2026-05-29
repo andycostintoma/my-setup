@@ -2,7 +2,8 @@
 description: Build, update, or query a graphify knowledge graph
 ---
 
-Invoke the `graphify` skill before doing anything else.
+This command is a thin entrypoint — all workflow logic lives in the `graphify`
+skill. Invoke the `graphify` skill before doing anything else.
 
 If arguments were provided after `/graphify`, pass them through as the requested graphify operation. If no arguments were provided, build or refresh a graph for the current directory.
 

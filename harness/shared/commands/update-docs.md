@@ -20,7 +20,7 @@ Step 2: Check AGENTS.md for stale guidance AND slim it down
   - If a section's only purpose is "see X for details", inline the one-liner or delete it
 - Check for duplication with the global AGENTS.md — anything already covered globally should NOT be in the project file
 
-Step 3: Clean up PLAN.md
+Step 3: Clean up PLAN.md (only if the project uses one — skip if absent)
 - Delete completed work — move to git history, not "Current Status"
 - Remove resolved open questions — just delete, don't keep as "RESOLVED"
   - Exception: if a resolved question's decision informs future implementation, keep as concise "Decision Taken"
@@ -46,4 +46,8 @@ Step 7: Review commands
 - Update stale file paths or tool references
 - Ensure commands are self-contained
 
-Target: PLAN.md < 300 lines. AGENTS.md as slim as possible without losing context. All docs, skills, and commands reflect current state.
+Target: PLAN.md (if used) < 300 lines. AGENTS.md as slim as possible without losing context. All docs, skills, and commands reflect current state.
+
+This command is **inward-looking**: it prunes drift and staleness in what already
+exists. For **outward-looking** improvement — researching new agent-tooling
+trends and proposing adoptions — use `/power-setup`.

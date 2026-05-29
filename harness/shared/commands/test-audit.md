@@ -14,8 +14,10 @@ Core questions to answer:
 7. Are tests fast enough? Where are the bottlenecks?
 8. Are some tests hiding bugs or working around code issues?
 
-Files to review:
-- All `*_test.go` files in the project
+Files to review (use the project's actual test layout — check AGENTS.md/Makefile;
+e.g. `*_test.go` for Go, `*.test.ts`/`*.spec.ts` for TS, `test_*.py`/`*_test.py`
+for Python):
+- All test files in the project
 - Test helpers and fixtures
 - Test infrastructure (Docker, emulator, etc.)
 - The project's test guidelines (if they exist)

@@ -20,6 +20,64 @@ A directory is a wiki when ALL of these exist at its root:
 
 If any are missing, this is not a wiki — do not apply these procedures. Suggest `/wiki-init` if appropriate.
 
+## Initializing a wiki
+
+When asked to bootstrap a new wiki (e.g. via `/wiki-init`), **interview first,
+scaffold minimally, let structure emerge.** Real wikis diverge in shape — some
+follow the canonical `raw/`+`wiki/` Karpathy split, others grow custom top-level
+dirs (`learning/`, `ops/`, `schema/`, `flows/`, `tasks/`, `shared/`), embed
+inside a working code repo under `.wiki/`, add their own `_lint.py`, or use git
+submodules. Do not impose the full directory tree up front; seed the minimum and
+record this wiki's conventions in its schema.
+
+### Interview
+
+Confirm `pwd` is the intended location. If it contains files other than `.git`,
+`.gitignore`, `README.md`, stop and ask whether to abort, target a subdirectory,
+or proceed in place. Then ask:
+
+- **Domain:** what is this wiki about?
+- **Source style:** text-only / mixed media / code repos.
+- **Expected scale:** dozens / hundreds / thousands of sources.
+- **Shape:** standalone wiki repo, or embedded in an existing project (e.g.
+  `.wiki/` inside a code repo)?
+- **Naming conventions:** any rules to lock in (lowercase, disambiguators).
+
+### Minimal seed
+
+Create only what every wiki needs; do not pre-create empty page-type dirs —
+create `wiki/entities/`, `concepts/`, etc. on first use when they actually hold a
+page. The seed:
+
+- `raw/` (with `.gitkeep`) — immutable sources. Skip if the wiki is purely
+  synthesis with no raw corpus, and note that in the schema.
+- `wiki/` (with `.gitkeep`) — LLM-owned pages.
+- `index.md` — catalog with stub sections (`_none yet_`).
+- `log.md` — append-only log with a single bootstrap entry
+  (`## [<TODAY>] init | wiki bootstrapped`).
+- `AGENTS.md` — two clearly separated sections: a short **Agent Policy**
+  (activate the `wiki` skill; never modify `raw/`; cite every non-trivial claim;
+  append to `log.md`; keep `index.md` in sync) and a **Wiki Schema** capturing
+  the interview answers plus this wiki's page types, slug rules, frontmatter
+  schema, and citation format (see the sections below for the canonical
+  defaults — copy and adapt, don't impose).
+- `.gitignore` — `.DS_Store`, `.obsidian/workspace*`, `*.tmp`, `lint-report-*.md`.
+- `README.md` (optional) — a short pointer to `raw/`, `wiki/`, `AGENTS.md`, and
+  this skill.
+
+Substitute `<TODAY>` with the real ISO date and the interview placeholders with
+the user's actual answers. If the user declines a question, use a sensible
+default and flag it in the schema as `TODO: confirm`.
+
+### After scaffolding
+
+- Initialize git only if asked: `git init` then `git add -A`. **Stage, do not
+  commit** (global policy: no commits without explicit instruction).
+- Do not ingest any sources during init — ingest is a separate operation.
+- Tell the user to restart their agent session if the harness config that
+  publishes this skill is stale, drop the first source into `raw/`, then ask for
+  an ingest.
+
 ## The three layers
 
 | Layer | Path | Owner | Mutability |

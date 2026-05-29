@@ -1,6 +1,15 @@
 ---
 description: "Provides architectural guidance, reviews design decisions, identifies tech debt, and evaluates trade-offs. Invoke with @tech-lead for strategic technical decisions."
 mode: subagent
+permission:
+  edit: deny
+  bash: deny
+  webfetch: allow
+  websearch: allow
+  read: allow
+  glob: allow
+  grep: allow
+  list: allow
 ---
 
 # Tech Lead

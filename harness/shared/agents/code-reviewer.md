@@ -1,7 +1,15 @@
 ---
 description: "Reviews code for quality, correctness, and best practices. Invoke with @code-reviewer or automatically via Task tool during review workflows."
 mode: subagent
-model: sonnet
+permission:
+  edit: deny
+  bash: deny
+  webfetch: allow
+  websearch: allow
+  read: allow
+  glob: allow
+  grep: allow
+  list: allow
 ---
 
 # Code Reviewer

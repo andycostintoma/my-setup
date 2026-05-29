@@ -1,7 +1,15 @@
 ---
 description: "Performs security audits — identifies vulnerabilities, auth flaws, data exposure risks, and dependency issues. Invoke with @security-reviewer."
 mode: subagent
-model: sonnet
+permission:
+  edit: deny
+  bash: deny
+  webfetch: allow
+  websearch: allow
+  read: allow
+  glob: allow
+  grep: allow
+  list: allow
 ---
 
 # Security Reviewer

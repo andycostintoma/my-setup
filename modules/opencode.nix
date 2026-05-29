@@ -123,12 +123,14 @@ in
     set -eu
 
     opencode_home="${homeDirectory}/.config/opencode"
-    install -d -m 0755 "$opencode_home/plugins"
+    install -d -m 0755 "$opencode_home/plugins" "$opencode_home/tools"
 
-    # opencode loads TypeScript plugins by real path. Individual Nix-store
-    # symlinks break relative imports and node_modules resolution, so copy
-    # this source tree while keeping plugin state out of it.
+    # opencode loads TypeScript plugins and custom tools by real path.
+    # Individual Nix-store symlinks break relative imports and node_modules
+    # resolution, so copy these source trees instead of symlinking them.
     ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
       ${harness.opencode}/plugins/ "$opencode_home/plugins/"
+    ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
+      ${harness.opencode}/tools/ "$opencode_home/tools/"
   '';
 }

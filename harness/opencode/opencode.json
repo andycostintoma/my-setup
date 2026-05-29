@@ -7,7 +7,7 @@
     "openrtk",
     "@tarquinen/opencode-dcp@latest",
     "./plugins/openviking/memory.ts",
-    "./plugins/automation/auto-recall.ts",
+    "./plugins/openviking/auto-recall.ts",
     "./plugins/automation/auto-explore.ts",
     "./plugins/automation/sound-notify.ts",
     "./plugins/claude-auth/plugin.ts"

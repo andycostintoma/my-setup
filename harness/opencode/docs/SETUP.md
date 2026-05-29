@@ -79,7 +79,7 @@ Enabled plugins are configured in `opencode.json` under `plugin`. Local implemen
 | `openrtk` | wraps bash tool execution to run `rtk rewrite` |
 | `@tarquinen/opencode-dcp@latest` | provides the `compress` tool |
 | `./plugins/openviking/memory.ts` | captures opencode sessions, exposes OpenViking memory tools, and auto-commits extracted memories |
-| `./plugins/automation/auto-recall.ts` | injects relevant OpenViking memories into the system prompt |
+| `./plugins/openviking/auto-recall.ts` | injects relevant OpenViking memories into the system prompt |
 | `./plugins/automation/auto-explore.ts` | auto-spawns the `explore` subagent on search/discovery prompts |
 | `./plugins/automation/sound-notify.ts` | plays Glass.aiff on permission/question events |
 | `./plugins/claude-auth/plugin.ts` | Claude subscription OAuth provider; reads tokens from macOS Keychain (Mac) or `~/.claude/.credentials.json` (Linux) so Anthropic requests use Claude Max OAuth instead of the static API key in `auth.json`. Required for Opus access on MediDrive accounts where the workspace API key has no Opus quota. |
@@ -102,6 +102,7 @@ It serves an OpenAI-compatible proxy on `127.0.0.1:11435` and forwards to Ollama
 
 ### auto-recall
 
+- Source: `~/.config/opencode/plugins/openviking/auto-recall.ts`
 - Scopes to `preferences` + `entities` only (see `../LOCAL-STACK.md`). Skips `events/`.
 - Score threshold 0.55, max 3 hits, decision cached per session.
 
@@ -124,6 +125,6 @@ It serves an OpenAI-compatible proxy on `127.0.0.1:11435` and forwards to Ollama
 
 - Config valid: `opencode --version` (errors if `opencode.json` is malformed)
 - Playwright MCP: `npx` must be on PATH. On Nix-managed machines this comes from Nix-managed `nodejs`, not a global npm install.
-- Regenerate auto-router agents after editing `agent-ladder.config.json` or `scripts/generate-agent-ladder.ts`: `node --experimental-strip-types scripts/generate-agent-ladder.ts`
+- Regenerate auto-router agents after editing `scripts/agent-ladder.config.json` or `scripts/generate-agent-ladder.ts`: `node --experimental-strip-types scripts/generate-agent-ladder.ts`
 
 For shared stack health checks (OpenViking, rtk), see `../LOCAL-STACK.md`.

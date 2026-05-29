@@ -53,9 +53,6 @@ in
   home.file.".config/opencode/node_modules" = managed (opencodeNodeModules + "/node_modules");
   home.file.".config/opencode/services" = managed (harness.opencode + "/services");
   home.file.".config/opencode/dcp.jsonc" = managed (harness.opencode + "/dcp.jsonc");
-  home.file.".config/opencode/agent-ladder.config.json" = managed (
-    harness.opencode + "/agent-ladder.config.json"
-  );
   home.file.".config/opencode/docs" = managed (harness.opencode + "/docs");
   home.file.".config/opencode/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
   home.file.".config/opencode/scripts" = managed (harness.opencode + "/scripts");

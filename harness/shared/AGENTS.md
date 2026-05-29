@@ -22,6 +22,23 @@ Never do these without explicit user permission:
 - Cross-repo research: search/index first, then read only what is needed. Use subagents for broad exploration.
 - When you find a structural smell, scan sibling flows for the same pattern and fix consistently.
 
+### Privileged macOS Commands
+
+For privileged commands that must run inside the user's interactive macOS Aqua session, use `sudo -A` with a GUI askpass helper instead of `osascript ... with administrator privileges`. This matters for `darwin-rebuild switch`: nix-darwin may touch `/Applications/Nix Apps/*.app`, and TCC App Management can reject non-Aqua root processes.
+
+Create or reuse an askpass helper under `/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/opencode/askpass.sh`:
+
+```sh
+#!/bin/sh
+osascript \
+  -e 'Tell application "System Events" to display dialog "Administrator password required" default answer "" with hidden answer buttons {"OK"} default button "OK"' \
+  -e 'text returned of result'
+```
+
+Then run privileged commands from the current terminal process with `SUDO_ASKPASS=/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/opencode/askpass.sh sudo -A <command>`. For example: `DR=$(command -v darwin-rebuild); SUDO_ASKPASS=/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/opencode/askpass.sh sudo -A "$DR" switch --flake path:/Users/andytoma/.config/my-setup`.
+
+If debugging, `SUDO_ASKPASS=... sudo -A launchctl managername` should print `Aqua`, not `System`.
+
 ---
 
 ## Correctness Over Closure

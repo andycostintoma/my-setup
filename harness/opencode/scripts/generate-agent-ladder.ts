@@ -2,9 +2,10 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const root = dirname(scriptDir);
 const config: AgentLadderConfig = JSON.parse(
-  await readFile(join(root, "agent-ladder.config.json"), "utf8"),
+  await readFile(join(scriptDir, "agent-ladder.config.json"), "utf8"),
 );
 
 type TierName = "small" | "medium" | "high";

@@ -3,14 +3,12 @@
   harness,
   packages,
   kimaki,
-  openclawUnhardlinked,
   openviking,
 }:
 
 { pkgs, lib, ... }:
 let
   homeDirectory = "/Users/${username}";
-  openclawPackage = openclawUnhardlinked pkgs;
   kimakiPackage = kimaki pkgs;
   openvikingPackage = openviking pkgs;
 
@@ -480,18 +478,6 @@ in
     '';
   };
 
-  home.activation.removeOldHarnessDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
-    set -eu
-
-    for target in \
-      /Users/${username}/.openclaw/skills
-    do
-      if [ -e "$target" ] || [ -L "$target" ]; then
-        rm -rf "$target"
-      fi
-    done
-  '';
-
   home.activation.opencodeWebSecrets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     set -eu
 
@@ -655,57 +641,6 @@ in
       StandardErrorPath = "/Users/${username}/Library/Logs/kimaki.error.log";
       EnvironmentVariables = {
         HOME = "/Users/${username}";
-      };
-    };
-  };
-
-  home.file.".openclaw/openclaw.json" = managed (harness.openclaw + "/openclaw.json");
-  home.file.".openclaw/skills" = managed (harness.shared + "/skills");
-  home.file.".openclaw/workspace/AGENTS.md" = managed (harness.openclaw + "/workspace/AGENTS.md");
-  home.file.".openclaw/workspace/HEARTBEAT.md" = managed (
-    harness.openclaw + "/workspace/HEARTBEAT.md"
-  );
-  home.file.".openclaw/workspace/IDENTITY.md" = managed (harness.openclaw + "/workspace/IDENTITY.md");
-  home.file.".openclaw/workspace/SOUL.md" = managed (harness.openclaw + "/workspace/SOUL.md");
-  home.file.".openclaw/workspace/TOOLS.md" = managed (harness.openclaw + "/workspace/TOOLS.md");
-  home.file.".openclaw/workspace/USER.md" = managed (harness.openclaw + "/workspace/USER.md");
-
-  home.activation.openclawDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run --quiet ${pkgs.coreutils}/bin/mkdir -p \
-      /Users/${username}/.openclaw/workspace \
-      /Users/${username}/.openclaw/workspace/memory \
-      /Users/${username}/Library/Logs
-  '';
-
-  launchd.agents.openclaw = {
-    enable = true;
-    config = {
-      ProgramArguments = [
-        "${openclawPackage}/bin/openclaw"
-        "gateway"
-        "--port"
-        "18789"
-        "run"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      WorkingDirectory = "/Users/${username}/.openclaw";
-      StandardOutPath = "/Users/${username}/Library/Logs/openclaw-gateway.log";
-      StandardErrorPath = "/Users/${username}/Library/Logs/openclaw-gateway.error.log";
-      EnvironmentVariables = {
-        HOME = "/Users/${username}";
-        OPENCLAW_CONFIG_PATH = "/Users/${username}/.openclaw/openclaw.json";
-        OPENCLAW_STATE_DIR = "/Users/${username}/.openclaw";
-        OPENCLAW_NIX_MODE = "1";
-        PATH =
-          lib.makeBinPath (
-            packages pkgs
-            ++ [
-              pkgs.bash
-              pkgs.coreutils
-            ]
-          )
-          + ":/usr/bin:/bin:/usr/sbin:/sbin";
       };
     };
   };

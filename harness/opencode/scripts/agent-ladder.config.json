@@ -32,7 +32,7 @@
       "label": "Anthropic",
       "routerAgent": "build-auto-anthropic",
       "routerModel": "anthropic/claude-haiku-4-5",
-      "descriptionModels": "Haiku 4.5 / Sonnet 4.6 / Opus 4.7",
+      "descriptionModels": "Haiku 4.5 / Sonnet 4.6 / Opus 4.8",
       "costReminder": "Haiku instead of Opus",
       "tiers": {
         "small": {
@@ -47,8 +47,8 @@
         },
         "high": {
           "agent": "anthropic-high",
-          "model": "anthropic/claude-opus-4-7",
-          "display": "Opus 4.7"
+          "model": "anthropic/claude-opus-4-8",
+          "display": "Opus 4.8"
         }
       }
     }

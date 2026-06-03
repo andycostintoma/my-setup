@@ -13,6 +13,10 @@
     "./plugins/claude-auth/plugin.ts"
   ],
   "permission": "allow",
+  "tool_output": {
+    "max_lines": 400,
+    "max_bytes": 20000
+  },
   "mcp": {
     "playwright": {
       "type": "local",
@@ -22,11 +26,6 @@
         "@playwright/mcp@latest",
         "--isolated"
       ],
-      "enabled": true
-    },
-    "postman": {
-      "type": "remote",
-      "url": "https://mcp.postman.com/mcp",
       "enabled": false
     }
   }

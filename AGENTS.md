@@ -26,7 +26,12 @@ These instructions apply to this entire `my-setup` configuration repository.
 
 ## Privileged Commands
 
-- When sudo access is needed, use the macOS administrator prompt via `osascript ... with administrator privileges` instead of asking the user to copy-paste commands into another terminal.
+- Do not run privileged repo commands, including `make switch`, plainly first and then retry with sudo/root after they fail.
+- For `darwin-rebuild switch` or `make switch`, do not use `osascript ... with administrator privileges`; that can run outside the user's Aqua session and hit macOS TCC/App Management errors while updating `/Applications/Nix Apps/*.app`.
+- Use `sudo -A` with the GUI askpass helper from the current terminal process:
+  `DR=$(command -v darwin-rebuild); SUDO_ASKPASS=/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/opencode/askpass.sh sudo -A "$DR" switch --flake path:/Users/andytoma/.config/my-setup`
+- If the helper does not exist, create `/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/opencode/askpass.sh` with a `System Events` hidden-password dialog, then `chmod +x` it.
+- To verify the privileged command is still in the Aqua session, run `SUDO_ASKPASS=... sudo -A launchctl managername`; it should print `Aqua`, not `System`.
 
 ## Editing Rules
 

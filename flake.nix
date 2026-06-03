@@ -40,7 +40,6 @@
       packages = import ./modules/packages.nix { inherit commonPackages; };
       harness = {
         shared = ./harness/shared;
-        openclaw = ./harness/openclaw;
         opencode = ./harness/opencode;
       };
       homeModule = import ./modules/home.nix {
@@ -48,7 +47,6 @@
         packages = packages.user;
         inherit (packages)
           kimaki
-          openclawUnhardlinked
           openviking
           ;
       };

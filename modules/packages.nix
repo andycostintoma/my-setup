@@ -88,18 +88,6 @@ rec {
       '';
     };
 
-  # OpenClaw's runtime rejects hardlinked bundled plugin public-surface
-  # files. nixpkgs currently ships at least some of those files hardlinked,
-  # so copy the package into a local output before launching it.
-  openclawUnhardlinked =
-    pkgs:
-    pkgs.runCommand "openclaw-${pkgs.openclaw.version}-unhardlinked" { } ''
-      mkdir -p "$out"
-      cp -R ${pkgs.openclaw}/. "$out/"
-      substituteInPlace "$out/bin/openclaw" \
-        --replace-fail "${pkgs.openclaw}" "$out"
-    '';
-
   kumospace =
     pkgs:
     pkgs.stdenvNoCC.mkDerivation {
@@ -288,7 +276,6 @@ rec {
       (kimaki pkgs)
       (setupctl pkgs)
       (openchamber pkgs)
-      (openclawUnhardlinked pkgs)
       (transcriber pkgs)
     ];
 

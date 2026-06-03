@@ -7,9 +7,10 @@ import type { Plugin } from "@opencode-ai/plugin"
 
 const execAsync = promisify(exec)
 const CACHE_TTL_MS = 60 * 1000
+const MAX_REPO_NAMES = 120
 
 let initPromise: Promise<boolean> | null = null
-let cachedRepos: string | null = null
+let cachedRepoSummary: string | null = null
 let lastFetchTime = 0
 
 async function run(cmd: string, opts: { timeout?: number } = {}) {
@@ -77,20 +78,24 @@ async function init(client: any): Promise<boolean> {
 
 async function loadRepos() {
   const now = Date.now()
-  if (cachedRepos !== null && now - lastFetchTime < CACHE_TTL_MS) return
+  if (cachedRepoSummary !== null && now - lastFetchTime < CACHE_TTL_MS) return
 
   try {
-    const { stdout } = await run("ov --output json ls viking://resources/ --abs-limit 2000")
-    const items = JSON.parse(stdout)?.result ?? []
-    const repos = items
-      .filter((item) => item.uri?.startsWith("viking://resources/"))
-      .map((item) => {
-        const name = item.uri.replace("viking://resources/", "").replace(/\/$/, "")
-        return item.abstract ? `- **${name}** (${item.uri})\n  ${item.abstract}` : `- **${name}** (${item.uri})`
-      })
+    const { stdout } = await run("ov ls viking://resources/ --simple --node-limit 2000")
+    const repoNames = stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim().split(/\s+/)[0])
+      .filter((uri) => uri.startsWith("viking://resources/"))
+      .map((uri) => uri.replace("viking://resources/", "").replace(/\/$/, ""))
+      .filter(Boolean)
+      .sort()
 
-    if (repos.length > 0) {
-      cachedRepos = repos.join("\n")
+    if (repoNames.length > 0) {
+      const listed = repoNames.slice(0, MAX_REPO_NAMES)
+      const omitted = repoNames.length - listed.length
+      cachedRepoSummary =
+        `Indexed repositories (${repoNames.length} total, names only): ${listed.join(", ")}` +
+        (omitted > 0 ? `, and ${omitted} more` : "")
       lastFetchTime = now
     }
   } catch {
@@ -109,18 +114,18 @@ export const OpenVikingContextPlugin: Plugin = async ({ client }) => {
     event: async ({ event }: any) => {
       if (event?.type !== "session.created") return
 
-      cachedRepos = null
+      cachedRepoSummary = null
       await refresh()
     },
 
     "experimental.chat.system.transform": (_input, output: any) => {
-      if (!cachedRepos) return
+      if (!cachedRepoSummary) return
       output.system.push(
         "## OpenViking - Indexed Code Repositories\n\n" +
-          "The following repos are semantically indexed and searchable.\n" +
-          "When the user asks about any of these projects or their internals, " +
-          "you MUST proactively load skill(\"openviking\") and use the correct ov commands to search and retrieve content before answering.\n\n" +
-          cachedRepos,
+          "OpenViking provides semantic search and retrieval for external/reference repositories. " +
+          "When the user asks about one of these projects, external repository internals, or prior indexed resources, " +
+          "load skill(\"openviking\") and search OpenViking before answering.\n\n" +
+          cachedRepoSummary,
       )
     },
   }

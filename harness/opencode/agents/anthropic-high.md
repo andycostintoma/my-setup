@@ -1,7 +1,7 @@
 ---
-description: Heavy-reasoning Anthropic tier (Opus 4.7). Use for architecture decisions, cross-repo or cross-service refactors, tricky multi-hypothesis debugging, design reviews, ADR drafting, and anything where deep thinking measurably pays for itself.
+description: Heavy-reasoning Anthropic tier (Opus 4.8). Use for architecture decisions, cross-repo or cross-service refactors, tricky multi-hypothesis debugging, design reviews, ADR drafting, and anything where deep thinking measurably pays for itself.
 mode: subagent
-model: anthropic/claude-opus-4-7
+model: anthropic/claude-opus-4-8
 temperature: 0.2
 permission:
   edit: allow

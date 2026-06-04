@@ -7,6 +7,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    agentic-setup.url = "github:andycostintoma/agentic-setup";
   };
 
   outputs =
@@ -14,6 +15,7 @@
       nixpkgs,
       nix-darwin,
       home-manager,
+      agentic-setup,
       ...
     }:
     let
@@ -36,14 +38,17 @@
       releaseRefsMatch =
         lockedRefs.nixpkgs == releaseRefs.nixpkgs && lockedRefs.home-manager == releaseRefs.home-manager;
       pkgs = import nixpkgs { inherit system; };
-      commonPackages = import ./modules/common-packages.nix;
+      agenticRoot = agentic-setup.outPath;
+      agenticPackages = import (agenticRoot + "/modules/packages.nix");
+      commonPackages = import ./modules/common-packages.nix { inherit agenticPackages; };
       packages = import ./modules/packages.nix { inherit commonPackages; };
       harness = {
-        shared = ./harness/shared;
-        opencode = ./harness/opencode;
+        shared = agenticRoot + "/harness/shared";
+        opencode = agenticRoot + "/harness/opencode";
       };
+      opencodeModule = agenticRoot + "/modules/opencode.nix";
       homeModule = import ./modules/home.nix {
-        inherit username harness;
+        inherit username harness opencodeModule;
         packages = packages.user;
         inherit (packages)
           kimaki

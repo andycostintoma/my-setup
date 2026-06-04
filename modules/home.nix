@@ -1,6 +1,7 @@
 {
   username,
   harness,
+  opencodeModule,
   packages,
   kimaki,
   openviking,
@@ -26,7 +27,7 @@ let
 in
 {
   imports = [
-    (import ./opencode.nix {
+    (import opencodeModule {
       inherit homeDirectory harness;
     })
   ];

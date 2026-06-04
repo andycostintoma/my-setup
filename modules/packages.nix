@@ -208,24 +208,6 @@ rec {
       chmod +x $out/bin/kimaki
     '';
 
-  # OpenChamber is not packaged in nixpkgs yet. Keep the CLI pinned and run it
-  # through Nix-provided Node/npm tooling without a global npm install.
-  openchamber =
-    pkgs:
-    let
-      version = pins.openchamber.version;
-    in
-    pkgs.runCommand "openchamber-${version}" { } ''
-      mkdir -p $out/bin
-
-      cat > $out/bin/openchamber <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${pkgs.nodejs}/bin/npx -y @openchamber/web@${version} "$@"
-      EOF
-
-      chmod +x $out/bin/openchamber
-    '';
-
   # Local transcription CLI. Python, faster-whisper, and the entrypoint source
   # are all managed by this flake.
   transcriber =
@@ -275,7 +257,6 @@ rec {
       (epubToMarkdown pkgs)
       (kimaki pkgs)
       (setupctl pkgs)
-      (openchamber pkgs)
       (transcriber pkgs)
     ];
 

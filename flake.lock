@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "agentic-setup": {
+      "locked": {
+        "lastModified": 1780569849,
+        "narHash": "sha256-nH5NWgmm/mnL7U6RZmaa3sBVOdVXZFsFRPE349Z7YVs=",
+        "owner": "andycostintoma",
+        "repo": "agentic-setup",
+        "rev": "6882385207003af48f06a1798505038b111ace0e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "andycostintoma",
+        "repo": "agentic-setup",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -60,6 +75,7 @@
     },
     "root": {
       "inputs": {
+        "agentic-setup": "agentic-setup",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs"

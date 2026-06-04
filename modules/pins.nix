@@ -1,9 +1,5 @@
 {
-  openviking.version = "0.3.21";
-  graphifyy.version = "0.8.24";
-
   kimaki.version = "0.13.0";
-  openchamber.version = "1.11.7";
   openchamberDesktop = {
     version = "1.11.7";
     url = "https://github.com/openchamber/openchamber/releases/download/v1.11.7/OpenChamber-1.11.7-mac-arm64.dmg";

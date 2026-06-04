@@ -63,6 +63,7 @@ interface SessionMapFile {
 
 // Map: OpenCode session ID → OpenViking session ID
 const sessionMap = new Map<string, SessionMapping>()
+const sessionMappingPromises = new Map<string, Promise<SessionMapping | null>>()
 
 // Buffer for messages that arrive before session mapping is established
 interface BufferedMessage {
@@ -604,6 +605,20 @@ function resolveEventSessionId(event: any): string | undefined {
   return event?.properties?.info?.id
     ?? event?.properties?.sessionID
     ?? event?.properties?.sessionId
+    ?? event?.data?.info?.id
+    ?? event?.data?.sessionID
+    ?? event?.data?.sessionId
+}
+
+function resolveOpenCodeEventType(event: any): string | undefined {
+  if (event?.type === "sync" && typeof event.name === "string") {
+    return event.name.replace(/\.\d+$/, "")
+  }
+  return event?.type
+}
+
+function resolveEventProperties(event: any): any {
+  return event?.type === "sync" ? event.data : event?.properties
 }
 
 /**
@@ -664,6 +679,85 @@ async function ensureOpenVikingSession(
       error: error.message,
     })
     return null
+  }
+}
+
+async function establishSessionMapping(
+  opencodeSessionId: string | undefined,
+  config: OpenVikingConfig,
+  reason: string,
+  sessionInfo?: unknown,
+): Promise<SessionMapping | null> {
+  if (!opencodeSessionId) return null
+
+  const existing = sessionMap.get(opencodeSessionId)
+  if (existing?.ovSessionId) return existing
+
+  const pending = sessionMappingPromises.get(opencodeSessionId)
+  if (pending) return pending
+
+  const promise = (async () => {
+    const ovSessionId = await ensureOpenVikingSession(opencodeSessionId, config)
+    if (!ovSessionId) {
+      log("ERROR", "event", "Failed to establish session mapping", {
+        session_id: opencodeSessionId,
+        reason,
+        session_info: safeStringify(sessionInfo),
+      })
+      return null
+    }
+
+    const mapping: SessionMapping = {
+      ovSessionId,
+      createdAt: Date.now(),
+      capturedMessages: new Set(),
+      messageRoles: new Map(),
+      pendingMessages: new Map(),
+      sendingMessages: new Set(),
+      lastCommitTime: undefined,
+      commitInFlight: false,
+    }
+    sessionMap.set(opencodeSessionId, mapping)
+
+    const bufferedMessages = sessionMessageBuffer.get(opencodeSessionId)
+    if (bufferedMessages && bufferedMessages.length > 0) {
+      log("INFO", "event", "Processing buffered messages", {
+        session_id: opencodeSessionId,
+        count: bufferedMessages.length,
+        reason,
+      })
+
+      for (const buffered of bufferedMessages) {
+        if (buffered.role) {
+          mapping.messageRoles.set(buffered.messageId, buffered.role)
+        }
+        if (buffered.content) {
+          mapping.pendingMessages.set(
+            buffered.messageId,
+            mergeMessageContent(mapping.pendingMessages.get(buffered.messageId), buffered.content)
+          )
+        }
+      }
+
+      await flushPendingMessages(opencodeSessionId, mapping, config)
+      sessionMessageBuffer.delete(opencodeSessionId)
+    }
+
+    debouncedSaveSessionMap()
+    log("INFO", "event", "Session mapping established", {
+      opencode_session: opencodeSessionId,
+      openviking_session: ovSessionId,
+      reason,
+      session_info: safeStringify(sessionInfo),
+    })
+    return mapping
+  })()
+
+  sessionMappingPromises.set(opencodeSessionId, promise)
+  try {
+    return await promise
+  } finally {
+    sessionMappingPromises.delete(opencodeSessionId)
   }
 }
 
@@ -1270,12 +1364,15 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
 
   return {
     event: async ({ event }) => {
-      if (event && event.type && event.type === "session.diff") {
+      const eventType = resolveOpenCodeEventType(event)
+      const eventProperties = resolveEventProperties(event)
+
+      if (eventType === "session.diff") {
         return;
       }
 
       // Handle session lifecycle events
-      if (event.type === "session.created") {
+      if (eventType === "session.created") {
         const sessionId = resolveEventSessionId(event)
         if (!sessionId) {
           log("ERROR", "event", "session.created event missing sessionId", {
@@ -1286,66 +1383,16 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
 
         log("INFO", "event", "OpenCode session created", {
           session_id: sessionId,
-          session_info: safeStringify(event.properties?.info)
+          session_info: safeStringify(eventProperties?.info)
         })
 
-        // Create or connect to OpenViking session (non-blocking)
-        const ovSessionId = await ensureOpenVikingSession(sessionId, config)
-        if (ovSessionId) {
-          sessionMap.set(sessionId, {
-            ovSessionId,
-            createdAt: Date.now(),
-            capturedMessages: new Set(),
-            messageRoles: new Map(),
-            pendingMessages: new Map(),
-            sendingMessages: new Set(),
-            lastCommitTime: undefined,
-            commitInFlight: false,
-          })
-
-          // Process buffered messages that arrived before session mapping
-          const bufferedMessages = sessionMessageBuffer.get(sessionId)
-          if (bufferedMessages && bufferedMessages.length > 0) {
-            log("INFO", "event", "Processing buffered messages", {
-              session_id: sessionId,
-              count: bufferedMessages.length
-            })
-
-            const mapping = sessionMap.get(sessionId)!
-            for (const buffered of bufferedMessages) {
-              // Store role if available
-              if (buffered.role) {
-                mapping.messageRoles.set(buffered.messageId, buffered.role)
-              }
-              // Store content as pending if available
-              if (buffered.content) {
-                mapping.pendingMessages.set(
-                  buffered.messageId,
-                  mergeMessageContent(mapping.pendingMessages.get(buffered.messageId), buffered.content)
-                )
-              }
-
-            }
-
-            await flushPendingMessages(sessionId, mapping, config)
-
-            // Clear buffer
-            sessionMessageBuffer.delete(sessionId)
-          }
-
-          debouncedSaveSessionMap()
-          log("INFO", "event", "Session mapping established", {
-            opencode_session: sessionId,
-            openviking_session: ovSessionId,
-            session_info: safeStringify(event.properties?.info)
-          })
-        } else {
-          log("ERROR", "event", "Failed to establish session mapping", {
-            session_id: sessionId,
-            session_info: safeStringify(event.properties?.info)
-          })
-        }
-      } else if (event.type === "session.deleted") {
+        await establishSessionMapping(
+          sessionId,
+          config,
+          "session.created",
+          eventProperties?.info,
+        )
+      } else if (eventType === "session.deleted") {
         const sessionId = resolveEventSessionId(event)
         if (!sessionId) {
           log("ERROR", "event", "session.deleted event missing sessionId", {
@@ -1356,7 +1403,7 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
 
         log("INFO", "event", "OpenCode session deleted", {
           session_id: sessionId,
-          session_info: safeStringify(event.properties?.info)
+          session_info: safeStringify(eventProperties?.info)
         })
 
         // Commit OpenViking session if mapped
@@ -1376,16 +1423,16 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
             log("INFO", "event", "Session mapping removed", {
               opencode_session: sessionId,
               openviking_session: mapping.ovSessionId,
-              session_info: safeStringify(event.properties?.info)
+              session_info: safeStringify(eventProperties?.info)
             })
           }
         } else {
           log("INFO", "event", "No session mapping found for deleted session", {
             session_id: sessionId,
-            session_info: safeStringify(event.properties?.info)
+            session_info: safeStringify(eventProperties?.info)
           })
         }
-      } else if (event.type === "session.error") {
+      } else if (eventType === "session.error") {
         const sessionId = resolveEventSessionId(event)
         if (!sessionId) {
           log("ERROR", "event", "session.error event missing sessionId", {
@@ -1397,7 +1444,7 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
         log("ERROR", "event", "OpenCode session error", {
           session_id: sessionId,
           error: safeStringify(event.error),
-          session_info: safeStringify(event.properties?.info)
+          session_info: safeStringify(eventProperties?.info)
         })
 
         // Optionally commit session to preserve work
@@ -1406,7 +1453,7 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
           log("INFO", "event", "Attempting to commit session after error", {
             opencode_session: sessionId,
             openviking_session: mapping.ovSessionId,
-            session_info: safeStringify(event.properties?.info)
+            session_info: safeStringify(eventProperties?.info)
           })
           await flushPendingMessages(sessionId, mapping, config)
 
@@ -1421,9 +1468,9 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
             await saveSessionMap()
           }
         }
-      } else if (event.type === "message.updated") {
+      } else if (eventType === "message.updated") {
         // Handle message capture for automatic session recording
-        const message = event.properties?.info
+        const message = eventProperties?.info
         if (!message) {
           log("DEBUG", "event", "message.updated event missing info", {
             event: safeStringify(event)
@@ -1431,13 +1478,13 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
           return
         }
 
-        const sessionId = message.sessionID
+        const sessionId = message.sessionID ?? eventProperties?.sessionID
         const messageId = message.id
         const role = message.role
         const finish = message.finish
 
         // Check if we have a session mapping
-        const mapping = sessionMap.get(sessionId)
+        let mapping = sessionMap.get(sessionId)
         if (!mapping) {
           // Buffer this message for later processing
           upsertBufferedMessage(sessionId, messageId, role ? { role } : {})
@@ -1446,7 +1493,13 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
             message_id: messageId,
             role: role
           })
-          return
+          mapping = await establishSessionMapping(
+            sessionId,
+            config,
+            "message.updated",
+            message,
+          )
+          if (!mapping) return
         }
 
         if (role === "user") {
@@ -1480,19 +1533,19 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
             cost: message.cost,
           })
         }
-      } else if (event.type === "message.part.updated") {
+      } else if (eventType === "message.part.updated") {
         // Handle message part updates to capture content
-        const part = event.properties?.part
+        const part = eventProperties?.part
         if (!part) {
           return
         }
 
-        const sessionId = part.sessionID
+        const sessionId = part.sessionID ?? eventProperties?.sessionID
         const messageId = part.messageID
         const partType = part.type
 
         // Check if we have a session mapping
-        const mapping = sessionMap.get(sessionId)
+        let mapping = sessionMap.get(sessionId)
         if (!mapping) {
           // Buffer this message content for later processing
           if (partType === "text" && part.text && part.text.trim().length > 0) {
@@ -1503,7 +1556,13 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
               content_length: part.text.length
             })
           }
-          return
+          mapping = await establishSessionMapping(
+            sessionId,
+            config,
+            "message.part.updated",
+            part,
+          )
+          if (!mapping) return
         }
 
         // Only capture text parts
@@ -1663,6 +1722,11 @@ export const OpenVikingMemoryPlugin = async (input: PluginInput): Promise<Hooks>
           let sessionId = args.session_id
           if (!sessionId && context.sessionID) {
             const mapping = sessionMap.get(context.sessionID)
+              ?? await establishSessionMapping(
+                context.sessionID,
+                config,
+                "memcommit",
+              )
             if (mapping) {
               sessionId = mapping.ovSessionId
             }

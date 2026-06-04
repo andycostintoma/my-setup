@@ -12,6 +12,14 @@ let
   homeDirectory = "/Users/${username}";
   kimakiPackage = kimaki pkgs;
   openvikingPackage = openviking pkgs;
+  sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
+  localOpencodeConfig = builtins.fromJSON (builtins.readFile ./opencode.local.json);
+  mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig localOpencodeConfig // {
+    plugin = (sharedOpencodeConfig.plugin or [ ]) ++ (localOpencodeConfig.plugin or [ ]);
+  };
+  opencodeConfig = pkgs.writeText "opencode-my-setup.json" (
+    builtins.toJSON mergedOpencodeConfig
+  );
 
   managed = source: {
     inherit source;
@@ -28,7 +36,10 @@ in
 {
   imports = [
     (import opencodeModule {
-      inherit homeDirectory harness;
+      inherit homeDirectory harness opencodeConfig;
+      extraDocSources = [ ../harness/opencode/docs ];
+      extraPluginSources = [ ../harness/opencode/plugins ];
+      extraSkillSources = [ ../harness/shared/skills ];
     })
   ];
 
@@ -371,6 +382,17 @@ in
           ${pkgs.ollama}/bin/ollama pull "$model"
         fi
       done
+
+      heretic_source="hf.co/mradermacher/Qwen2.5-Coder-7B-Instruct-heretic-i1-GGUF:Q4_K_M"
+      heretic_alias="qwen2.5-coder-7b-heretic"
+
+      if ! ${pkgs.ollama}/bin/ollama show "$heretic_source" >/dev/null 2>&1; then
+        ${pkgs.ollama}/bin/ollama pull "$heretic_source"
+      fi
+
+      if ! ${pkgs.ollama}/bin/ollama show "$heretic_alias" >/dev/null 2>&1; then
+        ${pkgs.ollama}/bin/ollama cp "$heretic_source" "$heretic_alias"
+      fi
     '';
   };
 
@@ -552,7 +574,7 @@ in
       ProgramArguments = [
         "${pkgs.nodejs}/bin/node"
         "--experimental-strip-types"
-        "/Users/${username}/.config/opencode/services/ollama-proxy.ts"
+        "${./ollama-opencode-proxy.my-setup.ts}"
       ];
       RunAtLoad = true;
       KeepAlive = true;

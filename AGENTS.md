@@ -9,7 +9,7 @@ These instructions apply to this entire `my-setup` configuration repository.
 - Nix and Home Manager are the only source of truth for packages, user configuration, system configuration, dotfiles, shell aliases, and machine-specific config.
 - Make durable machine configuration changes through this flake, not by editing generated files or installing tools out of band.
 - Shared agentic harness assets live in the separate `agentic-setup` flake input (`~/.config/agentic-setup` locally), not in this machine-specific repo.
-- Keep only machine-specific agent overlays in the machine setup repos.
+- Keep only machine-specific agent overlays in this repo, such as local-only skills, macOS notification plugins, and Mac/mobile OpenCode docs.
 - Do not edit generated targets such as `~/.config/opencode/` directly when the source exists in `agentic-setup` or a machine-specific overlay.
 - Do not use Homebrew, global npm installs, global Go installs, Cargo installs, pip, pipx, uv tool installs, or ad-hoc curl installers unless the user explicitly approves an exception.
 - OpenViking is the current explicit shim exception: Nix provides `uv`/`uvx`, and `flake.nix` pins the OpenViking version invoked by the wrapper.

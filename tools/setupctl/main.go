@@ -41,5 +41,5 @@ func usageText() string {
 
 Commands:
   update-release  Update flake.nix to the latest compatible Nix/Home Manager release
-  update-pins     Update manually pinned package versions and hashes`)
+  update-pins     Update local-only package versions and hashes`)
 }

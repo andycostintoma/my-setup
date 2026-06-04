@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,26 +18,23 @@ func updatePins(args []string) error {
 		return err
 	}
 
-	openvikingVersion, err := pypiVersion("openviking")
-	if err != nil {
-		return err
-	}
-	graphifyVersion, err := pypiVersion("graphifyy")
-	if err != nil {
-		return err
-	}
 	kimakiVersion, err := npmVersion("kimaki")
 	if err != nil {
 		return err
 	}
-	openchamberVersion, err := npmVersion("@openchamber/web")
+	openchamberDesktopVersion, err := npmVersion("@openchamber/web")
 	if err != nil {
 		return err
 	}
 
+	openchamberDesktopURL := fmt.Sprintf("https://github.com/openchamber/openchamber/releases/download/v%s/OpenChamber-%s-mac-arm64.dmg", openchamberDesktopVersion, openchamberDesktopVersion)
 	edgeURL := "https://go.microsoft.com/fwlink/?linkid=2093504"
 	kumospaceURL := "https://downloads.kumospace.com/production/macos/universal/latest/Kumospace.dmg"
 
+	openchamberDesktopPrefetch, err := prefetchFile("OpenChamber.dmg", openchamberDesktopURL)
+	if err != nil {
+		return err
+	}
 	edgePrefetch, err := prefetchFile("MicrosoftEdge.pkg", edgeURL)
 	if err != nil {
 		return err
@@ -58,11 +54,12 @@ func updatePins(args []string) error {
 	}
 
 	pins := fmt.Sprintf(`{
-  openviking.version = %q;
-  graphifyy.version = %q;
-
   kimaki.version = %q;
-  openchamber.version = %q;
+  openchamberDesktop = {
+    version = %q;
+    url = %q;
+    hash = %q;
+  };
 
   microsoftEdge = {
     version = %q;
@@ -76,37 +73,13 @@ func updatePins(args []string) error {
     hash = %q;
   };
 }
-`, openvikingVersion, graphifyVersion, kimakiVersion, openchamberVersion, edgeVersion, edgeURL, edgePrefetch.Hash, kumospaceVersion, kumospaceURL, kumospacePrefetch.Hash)
+`, kimakiVersion, openchamberDesktopVersion, openchamberDesktopURL, openchamberDesktopPrefetch.Hash, edgeVersion, edgeURL, edgePrefetch.Hash, kumospaceVersion, kumospaceURL, kumospacePrefetch.Hash)
 
 	if err := os.WriteFile(filepath.Join(*repo, "modules", "pins.nix"), []byte(pins), 0o644); err != nil {
 		return err
 	}
-	fmt.Printf("Updated pins: openviking %s, graphifyy %s, kimaki %s, openchamber %s, microsoft-edge %s, kumospace %s\n", openvikingVersion, graphifyVersion, kimakiVersion, openchamberVersion, edgeVersion, kumospaceVersion)
+	fmt.Printf("Updated local pins: kimaki %s, openchamber-desktop %s, microsoft-edge %s, kumospace %s\n", kimakiVersion, openchamberDesktopVersion, edgeVersion, kumospaceVersion)
 	return nil
-}
-
-func pypiVersion(pkg string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("https://pypi.org/pypi/%s/json", pkg))
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("fetch PyPI version for %s: %s", pkg, resp.Status)
-	}
-
-	var payload struct {
-		Info struct {
-			Version string `json:"version"`
-		} `json:"info"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
-		return "", err
-	}
-	if payload.Info.Version == "" {
-		return "", fmt.Errorf("missing PyPI version for %s", pkg)
-	}
-	return payload.Info.Version, nil
 }
 
 func npmVersion(pkg string) (string, error) {

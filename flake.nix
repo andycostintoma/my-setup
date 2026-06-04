@@ -30,10 +30,13 @@
       lockedRefs =
         let
           lock = builtins.fromJSON (builtins.readFile ./flake.lock);
+          rootInputs = lock.nodes.root.inputs;
+          rootNixpkgs = rootInputs.nixpkgs;
+          rootHomeManager = rootInputs.home-manager;
         in
         {
-          nixpkgs = lock.nodes.nixpkgs.original.ref or "";
-          home-manager = lock.nodes.home-manager.original.ref or "";
+          nixpkgs = lock.nodes.${rootNixpkgs}.original.ref or "";
+          home-manager = lock.nodes.${rootHomeManager}.original.ref or "";
         };
       releaseRefsMatch =
         lockedRefs.nixpkgs == releaseRefs.nixpkgs && lockedRefs.home-manager == releaseRefs.home-manager;

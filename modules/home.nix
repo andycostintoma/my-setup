@@ -703,6 +703,7 @@ in
       medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
       hm-switch = "home-manager switch --flake ~/.config/my-setup";
       nix-switch = "make -C ~/.config/my-setup switch";
+      opencode-playwright = "OPENCODE_CONFIG_CONTENT='{\"mcp\":{\"playwright\":{\"type\":\"local\",\"command\":[\"npx\",\"-y\",\"@playwright/mcp@latest\",\"--isolated\"],\"enabled\":true}}}' opencode";
     };
     initContent = ''
       path=("${homeDirectory}/Library/Application Support/JetBrains/Toolbox/scripts" $path)

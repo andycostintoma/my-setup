@@ -112,7 +112,7 @@ func edgePackageVersion(storePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	version, err := firstSubmatch(out, `MicrosoftEdge-([0-9][0-9.]+)\.pkg/?$`)
+	version, err := firstSubmatch(out, `(?m)^MicrosoftEdge-([0-9][0-9.]+)\.pkg/?$`)
 	if err != nil {
 		return "", fmt.Errorf("extract Microsoft Edge version: %w", err)
 	}
@@ -120,9 +120,12 @@ func edgePackageVersion(storePath string) (string, error) {
 }
 
 func kumospacePackageVersion(storePath string) (string, error) {
-	plist, err := commandBytes("7z", "e", "-so", storePath, "Kumospace/Kumospace.app/Contents/Info.plist")
-	if err != nil {
-		return "", err
+	cmd7z := exec.Command("7z", "e", "-so", storePath, "Kumospace/Kumospace.app/Contents/Info.plist")
+	var stderr7z bytes.Buffer
+	cmd7z.Stderr = &stderr7z
+	plist, err := cmd7z.Output()
+	if err != nil && len(plist) == 0 {
+		return "", fmt.Errorf("7z extract Kumospace Info.plist: %w: %s", err, strings.TrimSpace(stderr7z.String()))
 	}
 	cmd := exec.Command("/usr/bin/plutil", "-extract", "CFBundleShortVersionString", "raw", "-o", "-", "-")
 	cmd.Stdin = bytes.NewReader(plist)

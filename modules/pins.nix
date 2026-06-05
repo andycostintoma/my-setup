@@ -1,15 +1,15 @@
 {
-  kimaki.version = "0.13.0";
+  kimaki.version = "0.13.1";
   openchamberDesktop = {
-    version = "1.11.7";
-    url = "https://github.com/openchamber/openchamber/releases/download/v1.11.7/OpenChamber-1.11.7-mac-arm64.dmg";
-    hash = "sha256-j20OWnfErcZUdYaBpNp6WwJEq7yLaCGFG0AGa6+356I=";
+    version = "1.12.1";
+    url = "https://github.com/openchamber/openchamber/releases/download/v1.12.1/OpenChamber-1.12.1-mac-arm64.dmg";
+    hash = "sha256-8WekONXliMfLuUwGRBvgp7eooCREqzgO+JCN/FG8vQ4=";
   };
 
   microsoftEdge = {
-    version = "148.0.3967.96";
+    version = "149.0.4022.52";
     url = "https://go.microsoft.com/fwlink/?linkid=2093504";
-    hash = "sha256-0gVqXrmXK316PLNPv6MTtDwt3NnHKCsbu6eki1UCgIc=";
+    hash = "sha256-1cLiYW2POXvaUbE/vLh0l8vJiGYq3Ylv+sSgk90UQZU=";
   };
 
   kumospace = {

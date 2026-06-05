@@ -27,7 +27,7 @@
   "agent": {
     "local-heretic": {
       "description": "Uses the my-setup local Heretic Qwen2.5 Coder model for lightweight browser, search, and tool-loop tasks.",
-      "mode": "primary",
+      "mode": "subagent",
       "model": "ollama-heretic/qwen2.5-coder-7b-heretic"
     }
   }

@@ -461,6 +461,18 @@ in
     '';
   };
 
+  home.file.".local/bin/opencode-askpass" = {
+    executable = true;
+    text = ''
+      #!${pkgs.runtimeShell}
+      exec /usr/bin/osascript \
+        -e 'with timeout of 3600 seconds' \
+        -e 'Tell application "System Events" to display dialog "Administrator password required" default answer "" with hidden answer buttons {"OK"} default button "OK"' \
+        -e 'text returned of result' \
+        -e 'end timeout'
+    '';
+  };
+
   home.file.".local/bin/kimaki-server" = {
     executable = true;
     text = ''

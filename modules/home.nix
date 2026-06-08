@@ -438,15 +438,8 @@ in
       #!${pkgs.runtimeShell}
       set -eu
 
-      password_file="$HOME/.secrets/opencode/web-password"
-      if [ ! -s "$password_file" ]; then
-        printf 'Missing OpenChamber UI password file: %s\n' "$password_file" >&2
-        exit 1
-      fi
-
       export HOME="/Users/${username}"
       export OPENCHAMBER_HOST="0.0.0.0"
-      export OPENCHAMBER_UI_PASSWORD="$(cat "$password_file")"
       export OPENCHAMBER_OPENCODE_HOSTNAME="127.0.0.1"
       export PATH="${
         lib.makeBinPath (

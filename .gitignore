@@ -6,3 +6,6 @@ result-*
 .direnv/
 .DS_Store
 .playwright-mcp/
+
+# Built Go binaries
+tools/pdf-to-markdown/pdf-to-markdown

@@ -248,6 +248,15 @@ rec {
       vendorHash = null;
     };
 
+  pdfToMarkdown =
+    pkgs:
+    pkgs.buildGoModule {
+      pname = "pdf-to-markdown";
+      version = "0.1.0";
+      src = ../tools/pdf-to-markdown;
+      vendorHash = null;
+    };
+
   user =
     pkgs:
     commonPackages.common pkgs
@@ -257,6 +266,7 @@ rec {
       (epubToMarkdown pkgs)
       (kimaki pkgs)
       (setupctl pkgs)
+      (pdfToMarkdown pkgs)
       (transcriber pkgs)
     ];
 

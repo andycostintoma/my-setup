@@ -79,6 +79,7 @@
       packages.${system} = {
         setupctl = packages.setupctl pkgs;
         epub-to-markdown = packages.epubToMarkdown pkgs;
+        pdf-to-markdown = packages.pdfToMarkdown pkgs;
       };
 
       darwinConfigurations.${host} = nix-darwin.lib.darwinSystem {

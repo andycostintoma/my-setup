@@ -239,6 +239,10 @@ in
         IdentityFile /Users/${username}/.ssh/medidrive_key
         IdentitiesOnly yes
         UserKnownHostsFile /Users/${username}/.ssh/known_hosts
+        ServerAliveInterval 30
+        ServerAliveCountMax 4
+        ExitOnForwardFailure yes
+        TCPKeepAlive yes
 
       # Personal GitHub - use personal key (default)
       Host github.com
@@ -407,6 +411,62 @@ in
       }:/usr/bin:/bin:/usr/sbin:/sbin"
 
       exec ${kimakiPackage}/bin/kimaki --data-dir "$data_dir"
+    '';
+  };
+
+  home.file.".local/bin/jetbrains-toolbox-watchdog" = {
+    executable = true;
+    text = ''
+      #!${pkgs.runtimeShell}
+      set -eu
+
+      export HOME="/Users/${username}"
+      export PATH="${
+        lib.makeBinPath [
+          pkgs.coreutils
+          pkgs.gnugrep
+        ]
+      }:/usr/bin:/bin:/usr/sbin:/sbin"
+
+      log_file="$HOME/Library/Logs/JetBrains/Toolbox/toolbox.latest.log"
+      state_dir="$HOME/.local/state/jetbrains"
+      state_file="$state_dir/toolbox-watchdog.state"
+
+      [ -f "$log_file" ] || exit 0
+      mkdir -p "$state_dir"
+
+      inode="$(/usr/bin/stat -f '%i' "$log_file")"
+      size="$(/usr/bin/stat -f '%z' "$log_file")"
+      last_inode=""
+      last_offset="$size"
+
+      if [ -f "$state_file" ]; then
+        read -r last_inode last_offset < "$state_file" || true
+      fi
+
+      case "$last_offset" in
+        ""|*[!0-9]*) last_offset=0 ;;
+      esac
+
+      if [ "$inode" != "$last_inode" ] || [ "$last_offset" -gt "$size" ]; then
+        printf '%s %s\n' "$inode" "$size" > "$state_file"
+        exit 0
+      fi
+
+      if [ "$last_offset" -eq "$size" ]; then
+        exit 0
+      fi
+
+      new_log="$(tail -c +$((last_offset + 1)) "$log_file")"
+      printf '%s %s\n' "$inode" "$size" > "$state_file"
+
+      if ! printf '%s\n' "$new_log" | grep -Eq 'RejectedExecutionException: event executor terminated|Event loop shut down'; then
+        exit 0
+      fi
+
+      # The Toolbox Station server is wedged; only terminate remote thin clients, not local IDE windows.
+      /usr/bin/pkill -f 'goland thinClient stuw://ssh/' 2>/dev/null || true
+      launchctl kickstart -k "gui/$(id -u)/org.nix-community.home.com.jetbrains.toolbox"
     '';
   };
 
@@ -587,6 +647,22 @@ in
       RunAtLoad = true;
       StandardOutPath = "/Users/${username}/Library/Logs/JetBrains/Toolbox/launchd-stdout.log";
       StandardErrorPath = "/Users/${username}/Library/Logs/JetBrains/Toolbox/launchd-stderr.log";
+    };
+  };
+
+  launchd.agents."jetbrains-toolbox-watchdog" = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "/Users/${username}/.local/bin/jetbrains-toolbox-watchdog"
+      ];
+      RunAtLoad = true;
+      StartInterval = 60;
+      StandardOutPath = "/Users/${username}/Library/Logs/JetBrains/Toolbox/watchdog.log";
+      StandardErrorPath = "/Users/${username}/Library/Logs/JetBrains/Toolbox/watchdog.error.log";
+      EnvironmentVariables = {
+        HOME = "/Users/${username}";
+      };
     };
   };
 

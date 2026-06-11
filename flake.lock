@@ -5,11 +5,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1781180160,
-        "narHash": "sha256-PhXpSZNv+WJdoPN+MRL/vE0WHRqoHwj5/Wb2SKlJPjk=",
+        "lastModified": 1781193401,
+        "narHash": "sha256-2Zmk7lGz2njAVWgsbsFx3Vv2NS35ze9KlOcUmMCSBp0=",
         "owner": "andycostintoma",
         "repo": "agentic-setup",
-        "rev": "22128374218e044d52c329b917db847cfe9bd90f",
+        "rev": "86b8ef4236488838a088f744ba1f3d74ee19c51f",
         "type": "github"
       },
       "original": {

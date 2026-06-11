@@ -14,7 +14,6 @@ rec {
       jq
       nil
       nixfmt
-      ripgrep
       tmux
       tree
       ty

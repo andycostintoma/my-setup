@@ -32,26 +32,38 @@ func run(args []string) error {
 	startMarker := fs.String("start-marker", "", "trim leading matter before this marker")
 	startAtChapter1 := fs.Bool("start-at-chapter-1", false, "start at Chapter 1 using the PDF outline when available")
 	backend := fs.String("backend", "pdftohtml-xml", "backend: pdftohtml-xml or pdftotext")
+	auditMD := fs.String("audit-md", "", "existing markdown file to audit against the source PDF")
+	auditSection := fs.String("section", "", "section number to audit, for example 1.2")
+	auditFirstPage := fs.Int("pdf-first-page", 0, "first PDF page for audit; inferred from --section when omitted")
+	auditLastPage := fs.Int("pdf-last-page", 0, "last PDF page for audit; inferred from --section when omitted")
 	if err := fs.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return nil
 		}
 		return err
 	}
-	if strings.TrimSpace(*src) == "" || strings.TrimSpace(*destDir) == "" {
-		return errors.New("usage: pdf-to-markdown --src PATH --dest-dir PATH [options]")
+	if strings.TrimSpace(*src) == "" || (strings.TrimSpace(*destDir) == "" && strings.TrimSpace(*auditMD) == "") {
+		return errors.New("usage: pdf-to-markdown --src PATH --dest-dir PATH [options] OR pdf-to-markdown --src PATH --audit-md PATH --section N.N")
 	}
 
 	absSrc, err := filepath.Abs(*src)
 	if err != nil {
 		return err
 	}
+	if _, err := os.Stat(absSrc); err != nil {
+		return fmt.Errorf("source PDF not found: %s", absSrc)
+	}
+	if strings.TrimSpace(*auditMD) != "" {
+		absMD, err := filepath.Abs(*auditMD)
+		if err != nil {
+			return err
+		}
+		return auditMarkdownSection(absSrc, absMD, *auditSection, *auditFirstPage, *auditLastPage)
+	}
+
 	absDestDir, err := filepath.Abs(*destDir)
 	if err != nil {
 		return err
-	}
-	if _, err := os.Stat(absSrc); err != nil {
-		return fmt.Errorf("source PDF not found: %s", absSrc)
 	}
 	if *outputName == "" {
 		base := filepath.Base(absSrc)
@@ -973,6 +985,419 @@ func copyFile(src, dest string) error {
 		return err
 	}
 	return out.Close()
+}
+
+type sectionAudit struct {
+	Section       string
+	FirstPage     int
+	LastPage      int
+	PDFHeadings   []string
+	PDFCaptions   []string
+	PDFImageCount int
+	MDHeadings    []string
+	MDCaptions    []string
+	MDImages      []string
+	MDLineStart   int
+	MDLineEnd     int
+	Warnings      []string
+	ArtifactLines []string
+}
+
+func auditMarkdownSection(srcPDF, mdPath, section string, firstPage, lastPage int) error {
+	section = strings.TrimSpace(section)
+	if section == "" {
+		return errors.New("--audit-md requires --section, for example --section 1.2")
+	}
+	if _, err := os.Stat(mdPath); err != nil {
+		return fmt.Errorf("markdown file not found: %s", mdPath)
+	}
+
+	if firstPage <= 0 || lastPage <= 0 {
+		start, end, err := inferSectionPages(srcPDF, section)
+		if err != nil {
+			return err
+		}
+		if firstPage <= 0 {
+			firstPage = start
+		}
+		if lastPage <= 0 {
+			lastPage = end
+		}
+	}
+	if firstPage <= 0 || lastPage < firstPage {
+		return fmt.Errorf("invalid PDF page range: %d-%d", firstPage, lastPage)
+	}
+
+	tmpDir, err := os.MkdirTemp("", "pdf-audit-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpDir)
+
+	xmlPath, err := runPdftohtmlXML(srcPDF, filepath.Join(tmpDir, "audit"), firstPage, lastPage)
+	if err != nil {
+		return err
+	}
+	pdfSummary, err := summarizePDFXML(xmlPath)
+	if err != nil {
+		return err
+	}
+
+	mdData, err := os.ReadFile(mdPath)
+	if err != nil {
+		return err
+	}
+	mdSection, mdStart, mdEnd, err := extractMarkdownSection(string(mdData), section)
+	if err != nil {
+		return err
+	}
+
+	report := sectionAudit{
+		Section:       section,
+		FirstPage:     firstPage,
+		LastPage:      lastPage,
+		PDFHeadings:   sectionHeadings(pdfSummary.Headings, section),
+		PDFCaptions:   pdfSummary.Captions,
+		PDFImageCount: pdfSummary.ImageCount,
+		MDHeadings:    markdownHeadings(mdSection),
+		MDCaptions:    markdownCaptions(mdSection),
+		MDImages:      markdownImages(mdSection),
+		MDLineStart:   mdStart,
+		MDLineEnd:     mdEnd,
+	}
+	report.Warnings = auditWarnings(report, mdPath)
+	report.ArtifactLines = suspiciousMarkdownLines(mdSection, mdStart)
+	printAuditReport(report)
+	return nil
+}
+
+type pdfSummary struct {
+	Headings   []string
+	Captions   []string
+	ImageCount int
+}
+
+func summarizePDFXML(xmlPath string) (pdfSummary, error) {
+	dec, err := newXMLDecoderWithSanitizer(xmlPath)
+	if err != nil {
+		return pdfSummary{}, err
+	}
+	defer dec.close()
+
+	seenHeading := map[string]struct{}{}
+	seenCaption := map[string]struct{}{}
+	out := pdfSummary{}
+	for {
+		pm, ok, err := nextPage(dec.decoder)
+		if err != nil {
+			return pdfSummary{}, err
+		}
+		if !ok {
+			break
+		}
+		for _, b := range pm.Blocks {
+			s := strings.TrimSpace(b.Payload)
+			if s == "" {
+				continue
+			}
+			if b.Kind == "i" {
+				out.ImageCount++
+				continue
+			}
+			if looksLikeBookSectionHeading(s) {
+				if _, ok := seenHeading[s]; !ok {
+					out.Headings = append(out.Headings, s)
+					seenHeading[s] = struct{}{}
+				}
+				continue
+			}
+			if isLikelyCaptionLine(s) {
+				if _, ok := seenCaption[s]; !ok {
+					out.Captions = append(out.Captions, s)
+					seenCaption[s] = struct{}{}
+				}
+			}
+		}
+	}
+	return out, nil
+}
+
+func looksLikeBookSectionHeading(s string) bool {
+	if len(s) > 120 {
+		return false
+	}
+	return regexp.MustCompile(`^\d+(?:\.\d+){1,3}\s+[A-Z]`).MatchString(s)
+}
+
+func inferSectionPages(srcPDF, section string) (int, int, error) {
+	text, err := extractText(srcPDF)
+	if err != nil {
+		return 0, 0, err
+	}
+	pages := strings.Split(text, "\f")
+	start := pageContainingSection(pages, section)
+	if start == 0 {
+		return 0, 0, fmt.Errorf("could not infer PDF page for section %s; pass --pdf-first-page and --pdf-last-page", section)
+	}
+	next := nextSectionNumber(section)
+	end := start
+	if next != "" {
+		if nextPage := pageContainingSection(pages[start-1:], next); nextPage > 0 {
+			end = max(start, start+nextPage-2)
+		} else {
+			end = min(len(pages), start+3)
+		}
+	} else {
+		end = min(len(pages), start+3)
+	}
+	return start, end, nil
+}
+
+func pageContainingSection(pages []string, section string) int {
+	rx := regexp.MustCompile(`(?m)^\s*` + regexp.QuoteMeta(section) + `[\s\x00-\x1F]+[A-Z]`)
+	var matches []int
+	for i, page := range pages {
+		if rx.MatchString(page) {
+			matches = append(matches, i+1)
+		}
+	}
+	// Books commonly list every section in the Table of Contents before the real
+	// body occurrence. Prefer the second occurrence when present.
+	if len(matches) > 1 {
+		return matches[1]
+	}
+	if len(matches) == 1 {
+		return matches[0]
+	}
+	return 0
+}
+
+func nextSectionNumber(section string) string {
+	parts := strings.Split(section, ".")
+	if len(parts) == 0 {
+		return ""
+	}
+	last, err := strconv.Atoi(parts[len(parts)-1])
+	if err != nil {
+		return ""
+	}
+	parts[len(parts)-1] = strconv.Itoa(last + 1)
+	return strings.Join(parts, ".")
+}
+
+func extractMarkdownSection(md, section string) (string, int, int, error) {
+	lines := strings.Split(md, "\n")
+	sectionDepth := strings.Count(section, ".") + 1
+	start := -1
+	startLevel := 0
+	headingRX := regexp.MustCompile(`^(#{1,6})\s+(\d+(?:\.\d+)*)\b`)
+	for i, line := range lines {
+		m := headingRX.FindStringSubmatch(line)
+		if len(m) != 3 || m[2] != section {
+			continue
+		}
+		start = i
+		startLevel = len(m[1])
+		break
+	}
+	if start == -1 {
+		return "", 0, 0, fmt.Errorf("section %s not found in markdown", section)
+	}
+	end := len(lines)
+	for i := start + 1; i < len(lines); i++ {
+		m := headingRX.FindStringSubmatch(lines[i])
+		if len(m) != 3 {
+			continue
+		}
+		level := len(m[1])
+		depth := strings.Count(m[2], ".") + 1
+		if level <= startLevel && depth <= sectionDepth && m[2] != section {
+			end = i
+			break
+		}
+	}
+	return strings.Join(lines[start:end], "\n"), start + 1, end, nil
+}
+
+func markdownHeadings(md string) []string {
+	var out []string
+	for _, line := range strings.Split(md, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			out = append(out, strings.TrimSpace(regexp.MustCompile(`^#{1,6}\s+`).ReplaceAllString(line, "")))
+		}
+	}
+	return out
+}
+
+func markdownCaptions(md string) []string {
+	var out []string
+	for _, line := range strings.Split(md, "\n") {
+		line = strings.TrimSpace(line)
+		if isLikelyCaptionLine(line) {
+			out = append(out, line)
+		}
+	}
+	return out
+}
+
+func isLikelyCaptionLine(line string) bool {
+	line = strings.TrimSpace(line)
+	if !captionStartRX.MatchString(line) {
+		return false
+	}
+	// Body prose often starts with "Figure 1.x illustrates..." or "Figure 1.x shows...".
+	// Treat that as prose, not a caption, so audit output stays focused.
+	if regexp.MustCompile(`(?i)^Figure\s+\d+(?:\.\d+)+\s+(illustrates|shows)\b`).MatchString(line) {
+		return false
+	}
+	return true
+}
+
+func markdownImages(md string) []string {
+	rx := regexp.MustCompile(`!\[[^\]]*\]\(([^)]+)\)`)
+	var out []string
+	for _, m := range rx.FindAllStringSubmatch(md, -1) {
+		out = append(out, m[1])
+	}
+	return out
+}
+
+func auditWarnings(report sectionAudit, mdPath string) []string {
+	var warnings []string
+	for _, pdfHeading := range report.PDFHeadings {
+		if headingBelongsToSection(pdfHeading, report.Section) && !containsNormalized(report.MDHeadings, pdfHeading) {
+			warnings = append(warnings, "missing Markdown heading seen in PDF: "+pdfHeading)
+		}
+	}
+	for _, pdfCaption := range report.PDFCaptions {
+		if !containsCaption(report.MDCaptions, pdfCaption) {
+			warnings = append(warnings, "missing or changed Markdown caption seen in PDF: "+pdfCaption)
+		}
+	}
+	if report.PDFImageCount > 0 && len(report.MDImages) != report.PDFImageCount {
+		warnings = append(warnings, fmt.Sprintf("image count differs: PDF pages show %d large images, Markdown section references %d", report.PDFImageCount, len(report.MDImages)))
+	}
+	mdDir := filepath.Dir(mdPath)
+	for _, img := range report.MDImages {
+		if strings.HasPrefix(img, "http://") || strings.HasPrefix(img, "https://") {
+			continue
+		}
+		if _, err := os.Stat(filepath.Join(mdDir, img)); err != nil {
+			warnings = append(warnings, "missing image file referenced by Markdown: "+img)
+		}
+	}
+	return warnings
+}
+
+func headingBelongsToSection(heading, section string) bool {
+	return strings.HasPrefix(heading, section+" ") || strings.HasPrefix(heading, section+".")
+}
+
+func sectionHeadings(headings []string, section string) []string {
+	var out []string
+	for _, heading := range headings {
+		if headingBelongsToSection(heading, section) {
+			out = append(out, heading)
+		}
+	}
+	return out
+}
+
+func containsNormalized(items []string, target string) bool {
+	t := normalizeComparable(target)
+	for _, item := range items {
+		if normalizeComparable(item) == t {
+			return true
+		}
+	}
+	return false
+}
+
+func containsCaption(items []string, target string) bool {
+	if containsNormalized(items, target) {
+		return true
+	}
+	targetID := captionID(target)
+	if targetID == "" {
+		return false
+	}
+	for _, item := range items {
+		if captionID(item) == targetID {
+			return true
+		}
+	}
+	return false
+}
+
+func captionID(line string) string {
+	m := regexp.MustCompile(`(?i)^(Figure|Table)\s+(\d+(?:\.\d+)*)\b`).FindStringSubmatch(strings.TrimSpace(line))
+	if len(m) != 3 {
+		return ""
+	}
+	return strings.ToLower(m[1]) + " " + m[2]
+}
+
+func normalizeComparable(s string) string {
+	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s, "—", "-")
+	s = regexp.MustCompile(`\s+`).ReplaceAllString(s, " ")
+	s = strings.TrimSpace(s)
+	return s
+}
+
+func suspiciousMarkdownLines(md string, startLine int) []string {
+	checks := []regexp.Regexp{
+		*regexp.MustCompile(`[a-z]\.[A-Z][a-z]`),
+		*regexp.MustCompile(`[a-z]\?[A-Z][a-z]`),
+		*regexp.MustCompile(`[a-z]![A-Z][a-z]`),
+		*regexp.MustCompile(`\b[A-Za-z]{3,}-\s+[a-z]{2,}\b`),
+		*regexp.MustCompile(`\b\d,\s+\d{3}\b`),
+	}
+	var out []string
+	for i, line := range strings.Split(md, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+		for _, rx := range checks {
+			if rx.MatchString(trimmed) {
+				out = append(out, fmt.Sprintf("line %d: %s", startLine+i, trimmed))
+				break
+			}
+		}
+		if isLikelyCaptionLine(trimmed) && len(trimmed) > 180 {
+			out = append(out, fmt.Sprintf("line %d: %s", startLine+i, trimmed))
+		}
+	}
+	return out
+}
+
+func printAuditReport(report sectionAudit) {
+	fmt.Printf("PDF/Markdown section audit: %s\n", report.Section)
+	fmt.Printf("PDF pages: %d-%d\n", report.FirstPage, report.LastPage)
+	fmt.Printf("Markdown lines: %d-%d\n\n", report.MDLineStart, report.MDLineEnd)
+	printList("PDF headings", report.PDFHeadings)
+	printList("Markdown headings", report.MDHeadings)
+	fmt.Println()
+	printList("PDF captions", report.PDFCaptions)
+	printList("Markdown captions", report.MDCaptions)
+	fmt.Println()
+	fmt.Printf("PDF large image count: %d\n", report.PDFImageCount)
+	printList("Markdown images", report.MDImages)
+	fmt.Println()
+	printList("Warnings", report.Warnings)
+	printList("Suspicious Markdown lines", report.ArtifactLines)
+}
+
+func printList(title string, items []string) {
+	fmt.Println(title + ":")
+	if len(items) == 0 {
+		fmt.Println("  - none")
+		return
+	}
+	for _, item := range items {
+		fmt.Println("  - " + item)
+	}
 }
 
 func min(a, b int) int {

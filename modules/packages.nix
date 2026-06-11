@@ -44,6 +44,7 @@ rec {
       tailscale
       telegram-desktop
       vscode
+      wireshark
       zoom-us
     ];
 

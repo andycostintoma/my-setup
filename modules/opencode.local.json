@@ -1,7 +1,4 @@
 {
-  "plugin": [
-    "./plugins/automation/sound-notify.ts"
-  ],
   "provider": {
     "ollama-heretic": {
       "npm": "@ai-sdk/openai-compatible",

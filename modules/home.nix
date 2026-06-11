@@ -14,12 +14,54 @@ let
   openvikingPackage = openviking pkgs;
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
   localOpencodeConfig = builtins.fromJSON (builtins.readFile ./opencode.local.json);
+  sharedOpencodePlugins = sharedOpencodeConfig.plugin or [ ];
+  soundNotifyPlugin = "./plugins/automation/sound-notify.ts";
+  opencodeStateDir = "${homeDirectory}/.local/state/opencode";
+  soundNotifyStateFile = "${opencodeStateDir}/sound-notify-enabled";
   mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig localOpencodeConfig // {
-    plugin = (sharedOpencodeConfig.plugin or [ ]) ++ (localOpencodeConfig.plugin or [ ]);
+    plugin = sharedOpencodePlugins ++ (localOpencodeConfig.plugin or [ ]);
   };
   opencodeConfig = pkgs.writeText "opencode-my-setup.json" (
     builtins.toJSON mergedOpencodeConfig
   );
+  opencodePlaywrightConfig = builtins.toJSON {
+    mcp.playwright = {
+      type = "local";
+      command = [
+        "npx"
+        "-y"
+        "@playwright/mcp@latest"
+        "--isolated"
+      ];
+      enabled = true;
+    };
+  };
+  opencodeSoundNotifyOverride = builtins.toJSON {
+    plugin = sharedOpencodePlugins ++ [ soundNotifyPlugin ];
+  };
+  managedOpencode = pkgs.writeShellScript "opencode-managed" ''
+    set -eu
+
+    state_dir=${lib.escapeShellArg opencodeStateDir}
+    sound_notify_state_file=${lib.escapeShellArg soundNotifyStateFile}
+    sound_notify_override=${lib.escapeShellArg opencodeSoundNotifyOverride}
+
+    mkdir -p "$state_dir"
+
+    if [ -f "$sound_notify_state_file" ]; then
+      if [ -n "''${OPENCODE_CONFIG_CONTENT:-}" ]; then
+        export OPENCODE_CONFIG_CONTENT="$(${pkgs.jq}/bin/jq -cs '.[0] * .[1]' <<EOF
+$OPENCODE_CONFIG_CONTENT
+$sound_notify_override
+EOF
+)"
+      else
+        export OPENCODE_CONFIG_CONTENT="$sound_notify_override"
+      fi
+    fi
+
+    exec ${pkgs.opencode}/bin/opencode "$@"
+  '';
 
   managed = source: {
     inherit source;
@@ -209,6 +251,8 @@ in
 
   home.file.".docker/cli-plugins/docker-compose" =
     managedExecutable "${pkgs.docker-compose}/bin/docker-compose";
+
+  home.file.".local/bin/opencode" = managedExecutable managedOpencode;
 
   home.file.".local/bin/ollama-ensure-models" = {
     executable = true;
@@ -568,7 +612,10 @@ in
       medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
       hm-switch = "home-manager switch --flake ~/.config/my-setup";
       nix-switch = "make -C ~/.config/my-setup switch";
-      opencode-playwright = "OPENCODE_CONFIG_CONTENT='{\"mcp\":{\"playwright\":{\"type\":\"local\",\"command\":[\"npx\",\"-y\",\"@playwright/mcp@latest\",\"--isolated\"],\"enabled\":true}}}' opencode";
+      opencode = "${homeDirectory}/.local/bin/opencode";
+      opencode-playwright = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg opencodePlaywrightConfig} ${homeDirectory}/.local/bin/opencode";
+      opencode-sound-notify-enable = "mkdir -p ${lib.escapeShellArg opencodeStateDir} && touch ${lib.escapeShellArg soundNotifyStateFile}";
+      opencode-sound-notify-disable = "rm -f ${lib.escapeShellArg soundNotifyStateFile}";
     };
     initContent = ''
       path=("${homeDirectory}/Library/Application Support/JetBrains/Toolbox/scripts" $path)

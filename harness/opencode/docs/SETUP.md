@@ -80,7 +80,10 @@ kimaki send --channel <discord-channel-id> --prompt 'Review current git status a
 
 - Source: `~/.config/my-setup/harness/opencode/plugins/automation/sound-notify.ts`
 - Runtime copy: `~/.config/opencode/plugins/automation/sound-notify.ts`
-- Enabled from `modules/opencode.local.json`.
+- Disabled by default in `modules/opencode.local.json`.
+- `opencode` is routed through `~/.local/bin/opencode`, which applies the persisted toggle before launching the packaged binary.
+- Use `opencode-sound-notify-enable` to enable the plugin for future `opencode` sessions.
+- Use `opencode-sound-notify-disable` to disable it again for future `opencode` sessions.
 - Override the command with `OPENCODE_NOTIFY_SOUND_COMMAND`.
 
 ## Local Services

@@ -15,7 +15,6 @@ let
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
   localOpencodeConfig = builtins.fromJSON (builtins.readFile ./opencode.local.json);
   sharedOpencodePlugins = sharedOpencodeConfig.plugin or [ ];
-  soundNotifyPlugin = "./plugins/automation/sound-notify.ts";
   opencodeStateDir = "${homeDirectory}/.local/state/opencode";
   soundNotifyStateFile = "${opencodeStateDir}/sound-notify-enabled";
   mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig localOpencodeConfig // {
@@ -37,7 +36,7 @@ let
     };
   };
   opencodeSoundNotifyOverride = builtins.toJSON {
-    plugin = sharedOpencodePlugins ++ [ soundNotifyPlugin ];
+    plugin = [ "file://${homeDirectory}/.config/opencode/plugins/automation/sound-notify.ts" ];
   };
   managedOpencode = pkgs.writeShellScript "opencode-managed" ''
     set -eu
@@ -684,6 +683,7 @@ in
       plugins = [ "git" ];
     };
     shellAliases = {
+      code = "codium";
       medidrive = "ssh -t medidrive-vm 'cd ~/medidrive && exec $SHELL -l'";
       medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
       hm-switch = "home-manager switch --flake ~/.config/my-setup";

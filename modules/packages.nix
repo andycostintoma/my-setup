@@ -43,7 +43,7 @@ rec {
       slack
       tailscale
       telegram-desktop
-      vscode
+      vscodium
       wireshark
       zoom-us
     ];

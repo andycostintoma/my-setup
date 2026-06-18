@@ -8,6 +8,8 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     agentic-setup.url = "github:andycostintoma/agentic-setup";
+    antigravity-nix.url = "github:jacopone/antigravity-nix";
+    antigravity-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -16,6 +18,7 @@
       nix-darwin,
       home-manager,
       agentic-setup,
+      antigravity-nix,
       ...
     }:
     let
@@ -42,9 +45,14 @@
         lockedRefs.nixpkgs == releaseRefs.nixpkgs && lockedRefs.home-manager == releaseRefs.home-manager;
       pkgs = import nixpkgs { inherit system; };
       agenticRoot = agentic-setup.outPath;
-      agenticPackages = import (agenticRoot + "/modules/packages.nix");
+      agenticPackages = import (agenticRoot + "/modules/packages.nix") {
+        antigravityCli = antigravity-nix.packages.${system}.google-antigravity-cli;
+      };
       commonPackages = import ./modules/common-packages.nix { inherit agenticPackages; };
-      packages = import ./modules/packages.nix { inherit commonPackages; };
+      packages = import ./modules/packages.nix {
+        inherit commonPackages;
+        antigravity-ide = antigravity-nix.packages.${system}.google-antigravity-ide;
+      };
       harness = {
         shared = agenticRoot + "/harness/shared";
         opencode = agenticRoot + "/harness/opencode";

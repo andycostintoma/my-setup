@@ -1,4 +1,4 @@
-{ commonPackages }:
+{ commonPackages, antigravity-ide ? null }:
 
 let
   pins = import ./pins.nix;
@@ -29,7 +29,6 @@ rec {
 
   systemFromNixpkgs =
     pkgs: with pkgs; [
-      antigravity
       discord
       ghostty-bin
       google-chrome
@@ -247,5 +246,6 @@ rec {
     ++ [
       (kumospace pkgs)
       (microsoftEdge pkgs)
-    ];
+    ]
+    ++ pkgs.lib.optionals (antigravity-ide != null) [ antigravity-ide ];
 }

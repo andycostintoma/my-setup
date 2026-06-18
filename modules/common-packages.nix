@@ -1,7 +1,7 @@
 { agenticPackages }:
 
 rec {
-  inherit (agenticPackages) openviking graphify openchamber;
+  inherit (agenticPackages) openviking graphify;
 
   commonFromNixpkgs =
     pkgs: with pkgs; [

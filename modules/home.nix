@@ -15,8 +15,6 @@ let
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
   localOpencodeConfig = builtins.fromJSON (builtins.readFile ./opencode.local.json);
   sharedOpencodePlugins = sharedOpencodeConfig.plugin or [ ];
-  opencodeStateDir = "${homeDirectory}/.local/state/opencode";
-  soundNotifyStateFile = "${opencodeStateDir}/sound-notify-enabled";
   mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig localOpencodeConfig // {
     plugin = sharedOpencodePlugins ++ (localOpencodeConfig.plugin or [ ]);
   };
@@ -35,32 +33,6 @@ let
       enabled = true;
     };
   };
-  opencodeSoundNotifyOverride = builtins.toJSON {
-    plugin = [ "file://${homeDirectory}/.config/opencode/plugins/automation/sound-notify.ts" ];
-  };
-  managedOpencode = pkgs.writeShellScript "opencode-managed" ''
-    set -eu
-
-    state_dir=${lib.escapeShellArg opencodeStateDir}
-    sound_notify_state_file=${lib.escapeShellArg soundNotifyStateFile}
-    sound_notify_override=${lib.escapeShellArg opencodeSoundNotifyOverride}
-
-    mkdir -p "$state_dir"
-
-    if [ -f "$sound_notify_state_file" ]; then
-      if [ -n "''${OPENCODE_CONFIG_CONTENT:-}" ]; then
-        export OPENCODE_CONFIG_CONTENT="$(${pkgs.jq}/bin/jq -cs '.[0] * .[1]' <<EOF
-$OPENCODE_CONFIG_CONTENT
-$sound_notify_override
-EOF
-)"
-      else
-        export OPENCODE_CONFIG_CONTENT="$sound_notify_override"
-      fi
-    fi
-
-    exec ${pkgs.opencode}/bin/opencode "$@"
-  '';
 
   managed = source: {
     inherit source;
@@ -255,8 +227,6 @@ in
   home.file.".docker/cli-plugins/docker-compose" =
     managedExecutable "${pkgs.docker-compose}/bin/docker-compose";
 
-  home.file.".local/bin/opencode" = managedExecutable managedOpencode;
-
   home.file.".local/bin/ollama-ensure-models" = {
     executable = true;
     text = ''
@@ -336,35 +306,6 @@ in
         --hostname 0.0.0.0 \
         --mdns \
         --mdns-domain opencode.local
-    '';
-  };
-
-  home.file.".local/bin/openchamber-server" = {
-    executable = true;
-    text = ''
-      #!${pkgs.runtimeShell}
-      set -eu
-
-      export HOME="/Users/${username}"
-      export OPENCHAMBER_HOST="0.0.0.0"
-      export OPENCHAMBER_OPENCODE_HOSTNAME="127.0.0.1"
-      export PATH="${
-        lib.makeBinPath (
-          packages pkgs
-          ++ [
-            pkgs.bash
-            pkgs.coreutils
-            pkgs.git
-            pkgs.nodejs
-            pkgs.bun
-          ]
-        )
-      }:/usr/bin:/bin:/usr/sbin:/sbin"
-
-      exec openchamber serve \
-        --host 0.0.0.0 \
-        --port 3000 \
-        --foreground
     '';
   };
 
@@ -600,23 +541,6 @@ in
     };
   };
 
-  launchd.agents.openchamber = {
-    enable = true;
-    config = {
-      ProgramArguments = [
-        "/Users/${username}/.local/bin/openchamber-server"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      WorkingDirectory = "/Users/${username}";
-      StandardOutPath = "/Users/${username}/Library/Logs/openchamber.log";
-      StandardErrorPath = "/Users/${username}/Library/Logs/openchamber.error.log";
-      EnvironmentVariables = {
-        HOME = "/Users/${username}";
-      };
-    };
-  };
-
   launchd.agents.kimaki = {
     enable = true;
     config = {
@@ -686,12 +610,9 @@ in
       code = "codium";
       medidrive = "ssh -t medidrive-vm 'cd ~/medidrive && exec $SHELL -l'";
       medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
-      hm-switch = "home-manager switch --flake ~/.config/my-setup";
-      nix-switch = "make -C ~/.config/my-setup switch";
-      opencode = "${homeDirectory}/.local/bin/opencode";
-      opencode-playwright = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg opencodePlaywrightConfig} ${homeDirectory}/.local/bin/opencode";
-      opencode-sound-notify-enable = "mkdir -p ${lib.escapeShellArg opencodeStateDir} && touch ${lib.escapeShellArg soundNotifyStateFile}";
-      opencode-sound-notify-disable = "rm -f ${lib.escapeShellArg soundNotifyStateFile}";
+      hm-switch = "home-manager switch --flake ~/personal/my-setup";
+      nix-switch = "make -C ~/personal/my-setup switch";
+      opencode-playwright = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg opencodePlaywrightConfig} ${pkgs.opencode}/bin/opencode";
     };
     initContent = ''
       path=("${homeDirectory}/Library/Application Support/JetBrains/Toolbox/scripts" $path)

@@ -22,19 +22,9 @@ func updatePins(args []string) error {
 	if err != nil {
 		return err
 	}
-	openchamberDesktopVersion, err := npmVersion("@openchamber/web")
-	if err != nil {
-		return err
-	}
-
-	openchamberDesktopURL := fmt.Sprintf("https://github.com/openchamber/openchamber/releases/download/v%s/OpenChamber-%s-mac-arm64.dmg", openchamberDesktopVersion, openchamberDesktopVersion)
 	edgeURL := "https://go.microsoft.com/fwlink/?linkid=2093504"
 	kumospaceURL := "https://downloads.kumospace.com/production/macos/universal/latest/Kumospace.dmg"
 
-	openchamberDesktopPrefetch, err := prefetchFile("OpenChamber.dmg", openchamberDesktopURL)
-	if err != nil {
-		return err
-	}
 	edgePrefetch, err := prefetchFile("MicrosoftEdge.pkg", edgeURL)
 	if err != nil {
 		return err
@@ -55,11 +45,6 @@ func updatePins(args []string) error {
 
 	pins := fmt.Sprintf(`{
   kimaki.version = %q;
-  openchamberDesktop = {
-    version = %q;
-    url = %q;
-    hash = %q;
-  };
 
   microsoftEdge = {
     version = %q;
@@ -73,12 +58,12 @@ func updatePins(args []string) error {
     hash = %q;
   };
 }
-`, kimakiVersion, openchamberDesktopVersion, openchamberDesktopURL, openchamberDesktopPrefetch.Hash, edgeVersion, edgeURL, edgePrefetch.Hash, kumospaceVersion, kumospaceURL, kumospacePrefetch.Hash)
+`, kimakiVersion, edgeVersion, edgeURL, edgePrefetch.Hash, kumospaceVersion, kumospaceURL, kumospacePrefetch.Hash)
 
 	if err := os.WriteFile(filepath.Join(*repo, "modules", "pins.nix"), []byte(pins), 0o644); err != nil {
 		return err
 	}
-	fmt.Printf("Updated local pins: kimaki %s, openchamber-desktop %s, microsoft-edge %s, kumospace %s\n", kimakiVersion, openchamberDesktopVersion, edgeVersion, kumospaceVersion)
+	fmt.Printf("Updated local pins: kimaki %s, microsoft-edge %s, kumospace %s\n", kimakiVersion, edgeVersion, kumospaceVersion)
 	return nil
 }
 

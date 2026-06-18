@@ -29,6 +29,7 @@ rec {
 
   systemFromNixpkgs =
     pkgs: with pkgs; [
+      antigravity
       discord
       ghostty-bin
       google-chrome
@@ -41,6 +42,7 @@ rec {
       qbittorrent
       rectangle
       slack
+      t3code
       tailscale
       telegram-desktop
       vscodium
@@ -116,38 +118,6 @@ rec {
         mkdir -p $out/Applications $out/bin
         cp -R "Kumospace.app" $out/Applications/
         makeWrapper "$out/Applications/Kumospace.app/Contents/MacOS/Kumospace" $out/bin/kumospace
-
-        runHook postInstall
-      '';
-    };
-
-  openchamberDesktop =
-    pkgs:
-    pkgs.stdenvNoCC.mkDerivation {
-      pname = "openchamber-desktop";
-      version = pins.openchamberDesktop.version;
-
-      src = pkgs.fetchurl {
-        name = "OpenChamber-${pins.openchamberDesktop.version}-mac-arm64.dmg";
-        inherit (pins.openchamberDesktop) url hash;
-      };
-
-      nativeBuildInputs = with pkgs; [
-        makeWrapper
-        undmg
-      ];
-
-      sourceRoot = ".";
-      dontConfigure = true;
-      dontBuild = true;
-      dontFixup = true;
-
-      installPhase = ''
-        runHook preInstall
-
-        mkdir -p $out/Applications $out/bin
-        cp -R "OpenChamber.app" $out/Applications/
-        makeWrapper "$out/Applications/OpenChamber.app/Contents/MacOS/OpenChamber" $out/bin/openchamber-desktop
 
         runHook postInstall
       '';
@@ -277,6 +247,5 @@ rec {
     ++ [
       (kumospace pkgs)
       (microsoftEdge pkgs)
-      (openchamberDesktop pkgs)
     ];
 }

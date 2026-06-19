@@ -1,4 +1,4 @@
-FLAKE ?= $(HOME)/.config/my-setup
+FLAKE ?= $(HOME)/personal/my-setup
 FLAKE_REF ?= path:$(FLAKE)
 NIX_INSTALLER_URL ?= https://install.determinate.systems/nix
 NIX_PROFILE ?= /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh

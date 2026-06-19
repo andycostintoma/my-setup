@@ -51,15 +51,18 @@
       commonPackages = import ./modules/common-packages.nix { inherit agenticPackages; };
       packages = import ./modules/packages.nix {
         inherit commonPackages;
-        antigravity-ide = antigravity-nix.packages.${system}.google-antigravity-ide;
+        antigravity-app = antigravity-nix.packages.${system}.google-antigravity;
       };
       harness = {
         shared = agenticRoot + "/harness/shared";
         opencode = agenticRoot + "/harness/opencode";
       };
       opencodeModule = agenticRoot + "/modules/opencode.nix";
+      claudeModule = agenticRoot + "/modules/claude.nix";
+      codexModule = agenticRoot + "/modules/codex.nix";
+      antigravityModule = agenticRoot + "/modules/antigravity.nix";
       homeModule = import ./modules/home.nix {
-        inherit username harness opencodeModule;
+        inherit username harness opencodeModule claudeModule codexModule antigravityModule;
         packages = packages.user;
         inherit (packages)
           kimaki

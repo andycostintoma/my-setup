@@ -1,6 +1,6 @@
 # opencode local setup
 
-This file documents macOS-only OpenCode wiring for `my-setup`. Shared OpenCode, OpenViking, Graphify, and rtk setup lives in `~/.config/agentic-setup`.
+This file documents macOS-only OpenCode wiring for `my-setup`. Shared OpenCode, OpenViking, Graphify, and rtk setup lives in `~/personal/agentic-setup`.
 
 ## Key Paths
 
@@ -8,8 +8,8 @@ This file documents macOS-only OpenCode wiring for `my-setup`. Shared OpenCode, 
 - Docs: `~/.config/opencode/docs/`
 - Services: `~/.config/opencode/services/`
 - Plugins: `~/.config/opencode/plugins/`
-- Local-only plugin source: `~/.config/my-setup/harness/opencode/plugins/`
-- Local-only skill source: `~/.config/my-setup/harness/shared/skills/`
+- Local-only plugin source: `~/personal/my-setup/harness/opencode/plugins/`
+- Local-only skill source: `~/personal/my-setup/harness/shared/skills/`
 - Mobile web password: `~/.secrets/opencode/web-password` generated locally by Home Manager if missing
 - Mobile web logs: `~/Library/Logs/opencode-web.log`, `~/Library/Logs/opencode-web.error.log`
 - Kimaki data: `~/.kimaki/`
@@ -64,7 +64,7 @@ launchctl kickstart -k gui/$(id -u)/org.nix-community.home.kimaki
 Useful commands:
 
 ```sh
-kimaki project add ~/.config/my-setup
+kimaki project add ~/personal/my-setup
 kimaki send --channel <discord-channel-id> --prompt 'Review current git status and summarize risks'
 ```
 
@@ -78,7 +78,7 @@ kimaki send --channel <discord-channel-id> --prompt 'Review current git status a
 
 ### sound-notify
 
-- Source: `~/.config/my-setup/harness/opencode/plugins/automation/sound-notify.ts`
+- Source: `~/personal/my-setup/harness/opencode/plugins/automation/sound-notify.ts`
 - Runtime copy: `~/.config/opencode/plugins/automation/sound-notify.ts`
 - Disabled by default in `modules/opencode.local.json`.
 - `opencode` is routed through `~/.local/bin/opencode`, which applies the persisted toggle before launching the packaged binary.

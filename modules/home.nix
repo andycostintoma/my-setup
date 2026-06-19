@@ -2,6 +2,9 @@
   username,
   harness,
   opencodeModule,
+  claudeModule,
+  codexModule,
+  antigravityModule,
   packages,
   kimaki,
   openviking,
@@ -52,6 +55,18 @@ in
       inherit homeDirectory harness opencodeConfig;
       extraDocSources = [ ../harness/opencode/docs ];
       extraPluginSources = [ ../harness/opencode/plugins ];
+      extraSkillSources = [ ../harness/shared/skills ];
+    })
+    (import claudeModule {
+      inherit homeDirectory harness;
+      extraSkillSources = [ ../harness/shared/skills ];
+    })
+    (import codexModule {
+      inherit homeDirectory harness;
+      extraSkillSources = [ ../harness/shared/skills ];
+    })
+    (import antigravityModule {
+      inherit homeDirectory harness;
       extraSkillSources = [ ../harness/shared/skills ];
     })
   ];
@@ -214,6 +229,10 @@ in
         ServerAliveCountMax 4
         ExitOnForwardFailure yes
         TCPKeepAlive yes
+        LocalForward 14096 127.0.0.1:14096
+        ControlMaster auto
+        ControlPath /Users/${username}/.ssh/controlmasters/%r@%h:%p
+        ControlPersist 10m
 
       # Personal GitHub - use personal key (default)
       Host github.com
@@ -222,6 +241,11 @@ in
         IdentityFile /Users/${username}/.ssh/personal_key
         IdentitiesOnly yes
     '';
+  };
+
+  home.file.".ssh/controlmasters/.keep" = {
+    force = true;
+    text = "";
   };
 
   home.file.".docker/cli-plugins/docker-compose" =
@@ -589,6 +613,26 @@ in
     };
   };
 
+  launchd.agents.medidrive-tunnel = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "/usr/bin/ssh"
+        "-N"
+        "medidrive-vm"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      WorkingDirectory = "/Users/${username}";
+      StandardOutPath = "/Users/${username}/Library/Logs/medidrive-tunnel.log";
+      StandardErrorPath = "/Users/${username}/Library/Logs/medidrive-tunnel.error.log";
+      EnvironmentVariables = {
+        HOME = "/Users/${username}";
+        PATH = "/usr/bin:/bin:/usr/sbin:/sbin";
+      };
+    };
+  };
+
   programs.home-manager.enable = true;
 
   programs.direnv = {
@@ -610,6 +654,8 @@ in
       code = "codium";
       medidrive = "ssh -t medidrive-vm 'cd ~/medidrive && exec $SHELL -l'";
       medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
+      medidrive-tunnel-status = "ssh -O check medidrive-vm";
+      medidrive-tunnel-exit = "ssh -O exit medidrive-vm";
       hm-switch = "home-manager switch --flake ~/personal/my-setup";
       nix-switch = "make -C ~/personal/my-setup switch";
       opencode-playwright = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg opencodePlaywrightConfig} ${pkgs.opencode}/bin/opencode";

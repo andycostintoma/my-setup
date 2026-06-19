@@ -1,4 +1,4 @@
-{ commonPackages, antigravity-ide ? null }:
+{ commonPackages, antigravity-app ? null }:
 
 let
   pins = import ./pins.nix;
@@ -247,5 +247,5 @@ rec {
       (kumospace pkgs)
       (microsoftEdge pkgs)
     ]
-    ++ pkgs.lib.optionals (antigravity-ide != null) [ antigravity-ide ];
+    ++ pkgs.lib.optionals (antigravity-app != null) [ antigravity-app ];
 }

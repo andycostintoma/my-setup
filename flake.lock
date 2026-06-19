@@ -2,15 +2,14 @@
   "nodes": {
     "agentic-setup": {
       "inputs": {
-        "antigravity-nix": "antigravity-nix",
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1781791892,
-        "narHash": "sha256-fPjTWpLcNJE6c0KqZmPYg38okyllgmXizE1QySaDYFc=",
+        "lastModified": 1781870658,
+        "narHash": "sha256-b17Qy20+VcXZClr3qWOUJNJwWazK0i0cFSJNz5G+g6Q=",
         "owner": "andycostintoma",
         "repo": "agentic-setup",
-        "rev": "f22181583fc2baf9b898f618552260f0e7e389d4",
+        "rev": "9f29044d6fd77ff13e189df944ba4c4841e46a21",
         "type": "github"
       },
       "original": {
@@ -22,28 +21,6 @@
     "antigravity-nix": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": [
-          "agentic-setup",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1781686067,
-        "narHash": "sha256-wKyDttDDuW7JX2Kw4VFRy9Trl3Ax8k12bx1kXo6eD70=",
-        "owner": "jacopone",
-        "repo": "antigravity-nix",
-        "rev": "4fb91a32919cf020b0c40843c3713d7b5e24f3a9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "jacopone",
-        "repo": "antigravity-nix",
-        "type": "github"
-      }
-    },
-    "antigravity-nix_2": {
-      "inputs": {
-        "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -65,24 +42,6 @@
     "flake-utils": {
       "inputs": {
         "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "flake-utils_2": {
-      "inputs": {
-        "systems": "systems_2"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -175,28 +134,13 @@
     "root": {
       "inputs": {
         "agentic-setup": "agentic-setup",
-        "antigravity-nix": "antigravity-nix_2",
+        "antigravity-nix": "antigravity-nix",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs_2"
       }
     },
     "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_2": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",

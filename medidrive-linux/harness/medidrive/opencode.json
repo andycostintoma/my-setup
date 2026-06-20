@@ -1,0 +1,25 @@
+{
+  "plugin": [
+    "./plugins/medidrive-secrets.ts",
+    "./plugins/sound-notify.ts"
+  ],
+  "mcp": {
+    "postman": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@postman/postman-mcp-server@latest",
+        "--minimal"
+      ],
+      "env": {},
+      "enabled": false
+    },
+    "linear": {
+      "type": "remote",
+      "url": "https://mcp.linear.app/mcp",
+      "headers": {},
+      "enabled": false
+    }
+  }
+}

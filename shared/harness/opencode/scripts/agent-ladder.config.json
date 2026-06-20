@@ -1,0 +1,51 @@
+{
+  "providers": {
+    "openai": {
+      "label": "OpenAI",
+      "routerAgent": "build-auto-openai",
+      "descriptionModels": "GPT-5.4 mini / GPT-5.4 / GPT-5.5",
+      "tiers": {
+        "low": {
+          "agent": "openai-low",
+          "model": "openai/gpt-5.4-mini",
+          "display": "GPT-5.4 mini",
+          "reasoningEffort": "low"
+        },
+        "medium": {
+          "agent": "openai-medium",
+          "model": "openai/gpt-5.4",
+          "display": "GPT-5.4",
+          "reasoningEffort": "medium"
+        },
+        "strong": {
+          "agent": "openai-strong",
+          "model": "openai/gpt-5.5",
+          "display": "GPT-5.5",
+          "reasoningEffort": "high"
+        }
+      }
+    },
+    "anthropic": {
+      "label": "Anthropic",
+      "routerAgent": "build-auto-anthropic",
+      "descriptionModels": "Haiku 4.5 / Sonnet 4.6 / Opus 4.8",
+      "tiers": {
+        "low": {
+          "agent": "anthropic-low",
+          "model": "anthropic/claude-haiku-4-5",
+          "display": "Haiku 4.5"
+        },
+        "medium": {
+          "agent": "anthropic-medium",
+          "model": "anthropic/claude-sonnet-4-6",
+          "display": "Sonnet 4.6"
+        },
+        "strong": {
+          "agent": "anthropic-strong",
+          "model": "anthropic/claude-opus-4-8",
+          "display": "Opus 4.8"
+        }
+      }
+    }
+  }
+}

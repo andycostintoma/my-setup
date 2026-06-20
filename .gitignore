@@ -8,4 +8,4 @@ result-*
 .playwright-mcp/
 
 # Built Go binaries
-tools/pdf-to-markdown/pdf-to-markdown
+personal-mac/tools/pdf-to-markdown/pdf-to-markdown

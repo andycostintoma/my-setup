@@ -23,7 +23,7 @@ These instructions apply to this entire `my-setup` configuration repository.
 - Run Mac health checks: `make -C personal-mac audit`
 - Run MediDrive health checks: `make -C medidrive-linux audit`
 - Validate a machine flake: `make -C personal-mac check` or `make -C medidrive-linux check`
-- Apply Mac system and Home Manager changes: `darwin-rebuild switch --flake ~/personal/my-setup/personal-mac`
+- Apply Mac system and Home Manager changes: `darwin-rebuild switch --flake ~/my-setup/personal-mac`
 - Update inputs: `nix flake update --flake personal-mac` or `nix flake update --flake medidrive-linux`
 
 ## Privileged Commands
@@ -31,8 +31,8 @@ These instructions apply to this entire `my-setup` configuration repository.
 - Do not run privileged repo commands, including `make switch`, plainly first and then retry with sudo/root after they fail.
 - For `darwin-rebuild switch` or `make switch`, do not use `osascript ... with administrator privileges`; that can run outside the user's Aqua session and hit macOS TCC/App Management errors while updating `/Applications/Nix Apps/*.app`.
 - Use `sudo -A` with the managed GUI askpass helper from the current terminal process:
-  `DR=$(command -v darwin-rebuild); SUDO_ASKPASS=/Users/andytoma/.local/bin/opencode-askpass sudo -A "$DR" switch --flake path:/Users/andytoma/personal/my-setup/personal-mac`
-- If the managed helper is not available yet, create `/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/opencode/askpass.sh` with a `System Events` hidden-password dialog as a bootstrap helper, then `chmod +x` it and use that path for the first switch.
+  `DR=$(command -v darwin-rebuild); SUDO_ASKPASS=/Users/andytoma/.local/bin/opencode-askpass sudo -A "$DR" switch --flake path:/Users/andytoma/my-setup/personal-mac`
+- If the managed helper is not available yet, create `/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/my-setup-askpass.sh` with a `System Events` hidden-password dialog as a bootstrap helper, then `chmod +x` it and use that path for the first switch.
 - To verify the privileged command is still in the Aqua session, run `SUDO_ASKPASS=... sudo -A launchctl managername`; it should print `Aqua`, not `System`.
 
 ## Editing Rules

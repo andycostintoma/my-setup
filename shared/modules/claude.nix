@@ -1,7 +1,9 @@
 {
   homeDirectory,
   harness,
+  extraCommandSources ? [ ],
   extraSkillSources ? [ ],
+  ponytailPackage ? null,
 }:
 
 { pkgs, lib, ... }:
@@ -28,12 +30,31 @@ let
       (harness.shared + "/skills")
     ]
     ++ extraSkillSources
+    ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/skills") ]
   );
+
+  claudeCommands = mergeHarnessDir "claude-commands" (
+    [
+      (harness.shared + "/commands")
+    ]
+    ++ extraCommandSources
+    ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/.opencode/command") ]
+  );
+
+  claudeAgents =
+    (builtins.readFile (harness.shared + "/AGENTS.md"))
+    + lib.optionalString (ponytailPackage != null) (
+      "\n\n" + builtins.readFile (ponytailPackage + "/AGENTS.md")
+    );
 in
 {
   home.file.".claude/skills" = managed claudeSkills;
-  home.file.".claude/commands" = managed (harness.shared + "/commands");
-  home.file.".claude/AGENTS.md" = managed (harness.shared + "/AGENTS.md");
+  home.file.".claude/commands" = managed claudeCommands;
+  home.file.".claude/AGENTS.md" = {
+    text = claudeAgents;
+    force = true;
+  };
+  home.file.".claude/plugins/ponytail" = lib.mkIf (ponytailPackage != null) (managed ponytailPackage);
 
   home.activation.removeOldClaudeHarnessDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
     set -eu

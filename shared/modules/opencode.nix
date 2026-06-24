@@ -6,6 +6,7 @@
   extraSkillSources ? [ ],
   contextBrokerConfig ? null,
   opencodeConfig ? harness.opencode + "/opencode.json",
+  ponytailPackage ? null,
 }:
 
 { pkgs, lib, ... }:
@@ -48,6 +49,13 @@ let
     ++ extraDocSources
   );
 
+  opencodeCommands = mergeHarnessDir "opencode-commands" (
+    [
+      (harness.shared + "/commands")
+    ]
+    ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/.opencode/command") ]
+  );
+
   opencodeNodeModules = pkgs.importNpmLock.buildNodeModules {
     npmRoot = harness.opencode;
     nodejs = pkgs.nodejs;
@@ -56,6 +64,12 @@ let
       version = "1.4.10";
     };
   };
+
+  opencodeAgentsText =
+    (builtins.readFile (harness.shared + "/AGENTS.md"))
+    + lib.optionalString (builtins.pathExists (harness.opencode + "/AGENTS.md")) (
+      "\n" + builtins.readFile (harness.opencode + "/AGENTS.md")
+    );
 in
 {
   # Secret OpenViking config stays local in ~/.openviking/ov.conf.
@@ -71,7 +85,10 @@ in
   };
 
   home.file.".config/opencode/opencode.json" = managed opencodeConfig;
-  home.file.".config/opencode/AGENTS.md" = managed (harness.shared + "/AGENTS.md");
+  home.file.".config/opencode/AGENTS.md" = {
+    text = opencodeAgentsText;
+    force = true;
+  };
   home.file.".config/opencode/settings.json" = managed (harness.opencode + "/settings.json");
   home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
   home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");
@@ -83,7 +100,7 @@ in
   home.file.".config/opencode/scripts" = managed (harness.opencode + "/scripts");
   home.file.".config/opencode/agents" = managed opencodeAgents;
   home.file.".config/opencode/skills" = managed opencodeSkills;
-  home.file.".config/opencode/commands" = managed (harness.shared + "/commands");
+  home.file.".config/opencode/commands" = managed opencodeCommands;
   home.file.".config/opencode/context-broker.json".text = builtins.toJSON (
     if contextBrokerConfig == null then { } else contextBrokerConfig
   );
@@ -164,5 +181,9 @@ in
     '') extraPluginSources}
     ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
       ${harness.opencode}/tools/ "$opencode_home/tools/"
+    ${lib.optionalString (ponytailPackage != null) ''
+      ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
+        ${ponytailPackage}/ "$opencode_home/plugins/ponytail/"
+    ''}
   '';
 }

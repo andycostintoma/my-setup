@@ -7,7 +7,12 @@ let
   pins = import ./pins.nix;
 in
 rec {
-  inherit (sharedPackages) openviking graphify setupctl;
+  inherit (sharedPackages)
+    openviking
+    graphify
+    ponytail
+    setupctl
+    ;
 
   userFromNixpkgs =
     pkgs: with pkgs; [

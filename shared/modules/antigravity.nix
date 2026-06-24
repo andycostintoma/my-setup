@@ -1,7 +1,9 @@
 {
   homeDirectory,
   harness,
+  extraCommandSources ? [ ],
   extraSkillSources ? [ ],
+  ponytailPackage ? null,
 }:
 
 { pkgs, lib, ... }:
@@ -28,13 +30,37 @@ let
       (harness.shared + "/skills")
     ]
     ++ extraSkillSources
+    ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/skills") ]
   );
+
+  antigravityCommands = mergeHarnessDir "antigravity-commands" (
+    [
+      (harness.shared + "/commands")
+    ]
+    ++ extraCommandSources
+    ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/.opencode/command") ]
+  );
+
+  antigravityAgents =
+    (builtins.readFile (harness.shared + "/AGENTS.md"))
+    + lib.optionalString (ponytailPackage != null) (
+      "\n\n" + builtins.readFile (ponytailPackage + "/AGENTS.md")
+    );
 in
 {
   home.file.".gemini/antigravity-cli/skills" = managed antigravitySkills;
-  home.file.".gemini/antigravity-cli/commands" = managed (harness.shared + "/commands");
-  home.file.".gemini/GEMINI.md" = managed (harness.shared + "/AGENTS.md");
-  home.file.".gemini/AGENTS.md" = managed (harness.shared + "/AGENTS.md");
+  home.file.".gemini/antigravity-cli/commands" = managed antigravityCommands;
+  home.file.".gemini/antigravity-cli/extensions/ponytail" = lib.mkIf (ponytailPackage != null) (
+    managed ponytailPackage
+  );
+  home.file.".gemini/GEMINI.md" = {
+    text = antigravityAgents;
+    force = true;
+  };
+  home.file.".gemini/AGENTS.md" = {
+    text = antigravityAgents;
+    force = true;
+  };
 
   home.activation.removeOldAntigravityHarnessDirectories =
     lib.hm.dag.entryBefore [ "linkGeneration" ]

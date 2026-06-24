@@ -26,7 +26,11 @@
       username = "andytoma";
       host = "Andys-Mac-mini";
       system = "aarch64-darwin";
-      sharedRoot = shared.outPath;
+      sharedRoot =
+        if builtins.pathExists (shared.outPath + "/harness") then
+          shared.outPath
+        else
+          shared.outPath + "/shared";
       releaseRefs = {
         nixpkgs = "nixpkgs-${releaseVersion}-darwin";
         home-manager = "release-${releaseVersion}";
@@ -72,6 +76,7 @@
         packages = packages.user;
         inherit (packages)
           openviking
+          ponytail
           ;
       };
       darwinModule = import ./modules/darwin.nix {

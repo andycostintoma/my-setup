@@ -8,8 +8,8 @@ This file documents macOS-only OpenCode wiring for `my-setup`. Shared OpenCode, 
 - Docs: `~/.config/opencode/docs/`
 - Services: `~/.config/opencode/services/`
 - Plugins: `~/.config/opencode/plugins/`
-- Local-only plugin source: `~/personal/my-setup/personal-mac/harness/opencode/plugins/`
-- Local-only skill source: `~/personal/my-setup/personal-mac/harness/shared/skills/`
+- Local-only plugin source: `~/my-setup/personal-mac/harness/opencode/plugins/`
+- Local-only skill source: `~/my-setup/personal-mac/harness/shared/skills/`
 - Mobile web password: `~/.secrets/opencode/web-password` generated locally by Home Manager if missing
 - Mobile web logs: `~/Library/Logs/opencode-web.log`, `~/Library/Logs/opencode-web.error.log`
 
@@ -44,7 +44,7 @@ Do not expose this port directly to the public internet.
 
 ### sound-notify
 
-- Source: `~/personal/my-setup/personal-mac/harness/opencode/plugins/automation/sound-notify.ts`
+- Source: `~/my-setup/personal-mac/harness/opencode/plugins/automation/sound-notify.ts`
 - Runtime copy: `~/.config/opencode/plugins/automation/sound-notify.ts`
 - Disabled by default in `modules/opencode.local.json`.
 - `opencode` is routed through `~/.local/bin/opencode`, which applies the persisted toggle before launching the packaged binary.

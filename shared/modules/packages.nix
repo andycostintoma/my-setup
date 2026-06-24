@@ -116,6 +116,32 @@ rec {
       chmod +x $out/bin/graphify $out/bin/graphify-python
     '';
 
+  ponytail =
+    pkgs:
+    pkgs.stdenvNoCC.mkDerivation {
+      pname = "ponytail";
+      version = pins.ponytail.version;
+
+      src = pkgs.fetchFromGitHub {
+        owner = "DietrichGebert";
+        repo = "ponytail";
+        rev = "v${pins.ponytail.version}";
+        hash = pins.ponytail.hash;
+      };
+
+      dontConfigure = true;
+      dontBuild = true;
+
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out
+        cp -R . $out/
+
+        runHook postInstall
+      '';
+    };
+
   setupctl =
     pkgs:
     pkgs.buildGoModule {

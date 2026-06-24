@@ -7,17 +7,24 @@
   antigravityModule,
   packages,
   openviking,
+  ponytail,
 }:
 
 { pkgs, lib, ... }:
 let
   homeDirectory = "/Users/${username}";
   openvikingPackage = openviking pkgs;
+  ponytailPackage = ponytail pkgs;
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
   localOpencodeConfig = builtins.fromJSON (builtins.readFile ./opencode.local.json);
   sharedOpencodePlugins = sharedOpencodeConfig.plugin or [ ];
   mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig localOpencodeConfig // {
-    plugin = sharedOpencodePlugins ++ (localOpencodeConfig.plugin or [ ]);
+    plugin =
+      sharedOpencodePlugins
+      ++ (localOpencodeConfig.plugin or [ ])
+      ++ [
+        "./plugins/ponytail/.opencode/plugins/ponytail.mjs"
+      ];
   };
   opencodeConfig = pkgs.writeText "opencode-my-setup.json" (builtins.toJSON mergedOpencodeConfig);
   opencodePlaywrightConfig = builtins.toJSON {
@@ -48,21 +55,26 @@ in
 {
   imports = [
     (import opencodeModule {
-      inherit homeDirectory harness opencodeConfig;
+      inherit
+        homeDirectory
+        harness
+        opencodeConfig
+        ponytailPackage
+        ;
       extraDocSources = [ ../harness/opencode/docs ];
       extraPluginSources = [ ../harness/opencode/plugins ];
       extraSkillSources = [ ../harness/shared/skills ];
     })
     (import claudeModule {
-      inherit homeDirectory harness;
+      inherit homeDirectory harness ponytailPackage;
       extraSkillSources = [ ../harness/shared/skills ];
     })
     (import codexModule {
-      inherit homeDirectory harness;
+      inherit homeDirectory harness ponytailPackage;
       extraSkillSources = [ ../harness/shared/skills ];
     })
     (import antigravityModule {
-      inherit homeDirectory harness;
+      inherit homeDirectory harness ponytailPackage;
       extraSkillSources = [ ../harness/shared/skills ];
     })
   ];
@@ -523,8 +535,8 @@ in
       medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
       medidrive-tunnel-status = "ssh -O check medidrive-vm";
       medidrive-tunnel-exit = "ssh -O exit medidrive-vm";
-      hm-switch = "home-manager switch --flake ~/personal/my-setup/personal-mac";
-      nix-switch = "make -C ~/personal/my-setup/personal-mac switch";
+      hm-switch = "home-manager switch --flake ~/my-setup/personal-mac";
+      nix-switch = "make -C ~/my-setup/personal-mac switch";
       opencode-playwright = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg opencodePlaywrightConfig} ${pkgs.opencode}/bin/opencode";
     };
     initContent = ''

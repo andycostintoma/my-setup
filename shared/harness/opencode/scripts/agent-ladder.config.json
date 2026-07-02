@@ -28,7 +28,7 @@
     "anthropic": {
       "label": "Anthropic",
       "routerAgent": "build-auto-anthropic",
-      "descriptionModels": "Haiku 4.5 / Sonnet 4.6 / Opus 4.8",
+      "descriptionModels": "Haiku 4.5 / Sonnet 5.0 / Opus 4.8",
       "tiers": {
         "low": {
           "agent": "anthropic-low",
@@ -37,8 +37,8 @@
         },
         "medium": {
           "agent": "anthropic-medium",
-          "model": "anthropic/claude-sonnet-4-6",
-          "display": "Sonnet 4.6"
+          "model": "anthropic/claude-sonnet-5",
+          "display": "Sonnet 5.0"
         },
         "strong": {
           "agent": "anthropic-strong",

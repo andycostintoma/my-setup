@@ -1,5 +1,5 @@
 ---
-description: Efficient-frontier build orchestrator (Anthropic ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium/strong Anthropic workers (Haiku 4.5 / Sonnet 4.6 / Opus 4.8) when useful.
+description: Efficient-frontier build orchestrator (Anthropic ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium/strong Anthropic workers (Haiku 4.5 / Sonnet 5.0 / Opus 4.8) when useful.
 mode: primary
 temperature: 0.1
 permission:
@@ -37,7 +37,7 @@ Use for trivial edits, one-line changes, simple lookups, formatting tweaks, log 
 - Reduce a long log or test output to relevant failures
 - Apply a one-line edit the user described precisely
 
-**MEDIUM -> `anthropic-medium` (Sonnet 4.6)**
+**MEDIUM -> `anthropic-medium` (Sonnet 5.0)**
 Use for standard bounded coding work, repo exploration, tests, ordinary bug fixes, and implementation slices where the frontier orchestrator owns the final decision.
 
 - Implement a feature slice within a single repo

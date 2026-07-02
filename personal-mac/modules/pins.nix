@@ -1,8 +1,8 @@
 {
   microsoftEdge = {
-    version = "149.0.4022.62";
+    version = "149.0.4022.98";
     url = "https://go.microsoft.com/fwlink/?linkid=2093504";
-    hash = "sha256-vMxfTDRXUkR2edcU4jLMJIuZlsEqdmEEyxW27LTKcsM=";
+    hash = "sha256-AWXxEKUp0u2M6Y7YLvSxnDmuawSFuIzNV5fnEPa5udU=";
   };
 
   kumospace = {

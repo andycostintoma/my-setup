@@ -36,53 +36,10 @@ rec {
       ln -s ${pkgs.t3code}/bin/t3code $out/bin/t3
     '';
 
-  coderabbit =
-    pkgs:
-    pkgs.stdenv.mkDerivation rec {
-      pname = "coderabbit";
-      version = "0.4.5";
-
-      src = pkgs.fetchurl {
-        url = "https://cli.coderabbit.ai/releases/${version}/coderabbit-linux-x64.zip";
-        hash = "sha256-2burC25B/3CFlt5HwmBt84IMz2xltbFfDkeO8HawW6A=";
-      };
-
-      nativeBuildInputs = [
-        pkgs.autoPatchelfHook
-        pkgs.unzip
-      ];
-
-      buildInputs = [ pkgs.stdenv.cc.cc.lib ];
-
-      dontStrip = true;
-
-      unpackPhase = ''
-        runHook preUnpack
-        unzip $src
-        runHook postUnpack
-      '';
-
-      installPhase = ''
-        runHook preInstall
-        install -Dm755 coderabbit $out/bin/coderabbit
-        ln -s coderabbit $out/bin/cr
-        runHook postInstall
-      '';
-
-      meta = with pkgs.lib; {
-        description = "CodeRabbit CLI - AI code review from the terminal";
-        homepage = "https://www.coderabbit.ai/cli";
-        license = licenses.unfree;
-        mainProgram = "coderabbit";
-        platforms = [ "x86_64-linux" ];
-      };
-    };
-
   user =
     pkgs:
     sharedPackages.packages pkgs
     ++ [
-      (coderabbit pkgs)
       (gcloud pkgs)
       (spanner-cli pkgs)
       (t3 pkgs)

@@ -61,6 +61,21 @@ in
     text = antigravityAgents;
     force = true;
   };
+  home.file.".gemini/antigravity/mcp_config.json" = {
+    text = builtins.toJSON {
+      mcpServers = {
+        playwright = {
+          command = "npx";
+          args = [
+            "-y"
+            "@playwright/mcp@latest"
+            "--isolated"
+          ];
+        };
+      };
+    };
+    force = true;
+  };
 
   home.activation.removeOldAntigravityHarnessDirectories =
     lib.hm.dag.entryBefore [ "linkGeneration" ]

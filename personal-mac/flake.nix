@@ -52,6 +52,7 @@
       sharedHarness = {
         shared = sharedRoot + "/harness/shared";
         opencode = sharedRoot + "/harness/opencode";
+        antigravity = sharedRoot + "/harness/antigravity";
       };
       sharedPackages = import (sharedRoot + "/modules/packages.nix") {
         antigravityCli = antigravity-nix.packages.${system}.google-antigravity-cli;

@@ -26,6 +26,7 @@
       sharedHarness = {
         shared = sharedRoot + "/harness/shared";
         opencode = sharedRoot + "/harness/opencode";
+        antigravity = sharedRoot + "/harness/antigravity";
       };
       sharedPackages = import (sharedRoot + "/modules/packages.nix") { };
       packages = import ./modules/packages.nix { inherit sharedPackages; };

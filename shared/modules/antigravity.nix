@@ -25,24 +25,31 @@ let
       '') sources
     );
 
-  antigravitySkills = mergeHarnessDir "antigravity-skills" (
+  existingSources = builtins.filter builtins.pathExists;
+
+  antigravitySkills = mergeHarnessDir "antigravity-skills" (existingSources (
     [
       (harness.shared + "/skills")
+      (harness.antigravity + "/skills")
     ]
     ++ extraSkillSources
     ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/skills") ]
-  );
+  ));
 
-  antigravityCommands = mergeHarnessDir "antigravity-commands" (
+  antigravityCommands = mergeHarnessDir "antigravity-commands" (existingSources (
     [
       (harness.shared + "/commands")
+      (harness.antigravity + "/commands")
     ]
     ++ extraCommandSources
     ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/.opencode/command") ]
-  );
+  ));
 
   antigravityAgents =
     (builtins.readFile (harness.shared + "/AGENTS.md"))
+    + lib.optionalString (builtins.pathExists (harness.antigravity + "/AGENTS.md")) (
+      "\n" + builtins.readFile (harness.antigravity + "/AGENTS.md")
+    )
     + lib.optionalString (ponytailPackage != null) (
       "\n\n" + builtins.readFile (ponytailPackage + "/AGENTS.md")
     );
@@ -61,21 +68,7 @@ in
     text = antigravityAgents;
     force = true;
   };
-  home.file.".gemini/antigravity/mcp_config.json" = {
-    text = builtins.toJSON {
-      mcpServers = {
-        playwright = {
-          command = "npx";
-          args = [
-            "-y"
-            "@playwright/mcp@latest"
-            "--isolated"
-          ];
-        };
-      };
-    };
-    force = true;
-  };
+  home.file.".gemini/antigravity/mcp_config.json" = managed (harness.antigravity + "/mcp_config.json");
 
   home.activation.removeOldAntigravityHarnessDirectories =
     lib.hm.dag.entryBefore [ "linkGeneration" ]

@@ -68,6 +68,7 @@ in
     text = antigravityAgents;
     force = true;
   };
+  home.file.".gemini/config/mcp_config.json" = managed (harness.antigravity + "/mcp_config.json");
   home.file.".gemini/antigravity/mcp_config.json" = managed (harness.antigravity + "/mcp_config.json");
 
   home.activation.removeOldAntigravityHarnessDirectories =
@@ -84,4 +85,5 @@ in
           fi
         done
       '';
+
 }

@@ -108,15 +108,14 @@
     },
     "shared": {
       "locked": {
-        "lastModified": 1784027965,
-        "narHash": "sha256-CsOnlN3NM7WvpD8VfkwsHZwA10sfEYexDUmGk47VTIU=",
-        "path": "/Users/andytoma/my-setup/shared",
+        "path": "../shared",
         "type": "path"
       },
       "original": {
         "path": "../shared",
         "type": "path"
-      }
+      },
+      "parent": []
     },
     "systems": {
       "locked": {

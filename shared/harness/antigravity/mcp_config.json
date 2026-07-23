@@ -1,12 +1,15 @@
 {
   "mcpServers": {
     "playwright": {
-      "command": "npx",
+      "command": "/etc/profiles/per-user/andytoma/bin/npx",
       "args": [
         "-y",
         "@playwright/mcp@latest",
         "--isolated"
-      ]
+      ],
+      "env": {
+        "PLAYWRIGHT_MCP_HEADLESS": "false"
+      }
     }
   }
 }

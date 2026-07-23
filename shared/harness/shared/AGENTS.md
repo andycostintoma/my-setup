@@ -10,6 +10,7 @@ Never do these without explicit user permission:
 | **Revert files** | `git checkout --`, `git restore`, `git reset` | "revert", "discard changes" |
 | **Lint exclusions** | `nolint`, `noqa`, `eslint-disable`, linter config changes | Present options, let user decide |
 | **Create docs** | New `.md`/`.txt` files, READMEs, summaries, guides | "create a doc", "write a README" |
+| **Post comments** | Comments on GitHub (issues, PRs, reviews) or Linear (issues, projects, initiatives) | "post a comment", "comment on the ticket/PR" |
 
 ---
 

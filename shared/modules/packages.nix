@@ -94,28 +94,6 @@ rec {
       chmod +x $out/bin/ov $out/bin/openviking $out/bin/openviking-server $out/bin/vikingbot $out/hook-bin/python3
     '';
 
-  graphify =
-    pkgs:
-    let
-      version = pins.graphifyy.version;
-      uvxGraphify = "${pkgs.uv}/bin/uvx --python ${pkgs.python3}/bin/python3 --from graphifyy==${version}";
-    in
-    pkgs.runCommand "graphify-${version}" { } ''
-      mkdir -p $out/bin
-
-      cat > $out/bin/graphify <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxGraphify} graphify "$@"
-      EOF
-
-      cat > $out/bin/graphify-python <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxGraphify} python "$@"
-      EOF
-
-      chmod +x $out/bin/graphify $out/bin/graphify-python
-    '';
-
   ponytail =
     pkgs:
     pkgs.stdenvNoCC.mkDerivation {
@@ -155,7 +133,6 @@ rec {
     pkgs:
     fromNixpkgs pkgs
     ++ [
-      (graphify pkgs)
       (openviking pkgs)
       (setupctl pkgs)
     ]

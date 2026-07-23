@@ -24,7 +24,7 @@ Enabled plugins are configured in `opencode.json` under `plugin`. TypeScript plu
 | `openrtk` | wraps bash tool execution to run `rtk rewrite` |
 | `@tarquinen/opencode-dcp@latest` | provides the `compress` tool |
 | `./plugins/openviking/memory.ts` | captures opencode sessions, exposes OpenViking memory tools, and auto-commits extracted memories |
-| `./plugins/automation/context-broker.ts` | performs compact high-confidence OpenViking/graphify retrieval and graphify maintenance without prompt-routing noise |
+| `./plugins/automation/context-broker.ts` | performs compact high-confidence OpenViking retrieval without prompt-routing noise |
 | `opencode-claude-auth@latest` | Claude subscription OAuth provider; reads tokens from macOS Keychain on macOS or `~/.claude/.credentials.json` on Linux |
 
 ## Services
@@ -47,7 +47,7 @@ Enabled plugins are configured in `opencode.json` under `plugin`. TypeScript plu
 - Source: `~/.config/opencode/plugins/automation/context-broker.ts`
 - Config: `~/.config/opencode/context-broker.json`
 - Logs/state: `~/.local/state/opencode/context-broker/`
-- Shared defaults are conservative: OpenViking reads are high-threshold, graphify updates existing graphs, and graphify auto-init is disabled unless a consuming setup repo configures trusted roots.
+- Shared defaults are conservative: OpenViking reads are high-threshold.
 - Injects only compact turn-scoped results under `## Retrieved Context`; never injects indexed repo lists, generic routing instructions, or failed status reports.
 
 ## Quick Checklist

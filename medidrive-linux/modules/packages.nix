@@ -1,7 +1,7 @@
 { sharedPackages }:
 
 rec {
-  inherit (sharedPackages) openviking graphify setupctl;
+  inherit (sharedPackages) openviking setupctl;
 
   # google-cloud-sdk with the GKE auth plugin so `kubectl` can pull credentials
   # via `gcloud container clusters get-credentials`. Kept as a custom expression

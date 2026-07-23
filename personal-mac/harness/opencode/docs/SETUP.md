@@ -1,6 +1,6 @@
 # opencode local setup
 
-This file documents macOS-only OpenCode wiring for `my-setup`. Shared OpenCode, OpenViking, Graphify, and rtk setup lives under `shared/` in this repo.
+This file documents macOS-only OpenCode wiring for `my-setup`. Shared OpenCode, OpenViking, and rtk setup lives under `shared/` in this repo.
 
 ## Key Paths
 

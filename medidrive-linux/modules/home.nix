@@ -13,15 +13,6 @@
 let
   homeDirectory = "/home/${username}";
   openvikingPackage = openviking pkgs;
-  contextBrokerConfig = {
-    graphify = {
-      autoInit = true;
-      workspaceRoots = [ "${homeDirectory}/medidrive" ];
-      repoRoots = [ "${homeDirectory}/medidrive/repos" ];
-      trustedAutoInitRoots = [ "${homeDirectory}/medidrive/repos" ];
-      workspaceGraphMode = "workspace-only";
-    };
-  };
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
   medidriveOpencodeConfig = builtins.fromJSON (builtins.readFile ../harness/medidrive/opencode.json);
   mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig medidriveOpencodeConfig // {
@@ -35,7 +26,6 @@ in
       inherit
         homeDirectory
         harness
-        contextBrokerConfig
         opencodeConfig
         ;
       extraPluginSources = [ ../harness/medidrive/plugins ];

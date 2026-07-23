@@ -46,6 +46,5 @@ audit:
 	printf '%s\n' '== tools =='; \
 	command -v opencode >/dev/null; \
 	command -v ov >/dev/null; \
-	command -v graphify >/dev/null; \
 	printf '%s\n' '== git status =='; \
 	git -C $(REPO_ROOT) status --short --branch

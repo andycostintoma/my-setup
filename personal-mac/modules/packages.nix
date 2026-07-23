@@ -9,7 +9,6 @@ in
 rec {
   inherit (sharedPackages)
     openviking
-    graphify
     ponytail
     setupctl
     ;

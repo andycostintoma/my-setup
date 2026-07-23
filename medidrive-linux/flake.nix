@@ -21,6 +21,9 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
+        # ponytail: t3code (SSH pairing shim) still pins an EOL electron build;
+        # drop this once nixpkgs updates t3code's electron version.
+        config.permittedInsecurePackages = [ "electron-40.10.5" ];
       };
       sharedRoot = shared.outPath;
       sharedHarness = {

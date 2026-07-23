@@ -29,6 +29,9 @@ in
 {
   nixpkgs.config = {
     allowUnfree = true;
+    # ponytail: discord/slack still bundle an EOL electron build;
+    # drop this once nixpkgs updates them off electron-40.10.5.
+    permittedInsecurePackages = [ "electron-40.10.5" ];
   };
   nix.settings.experimental-features = [
     "nix-command"

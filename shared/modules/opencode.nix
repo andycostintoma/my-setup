@@ -168,7 +168,7 @@ in
     set -eu
 
     opencode_home="${homeDirectory}/.config/opencode"
-    install -d -m 0755 "$opencode_home/plugins" "$opencode_home/tools"
+    install -d -m 0755 "$opencode_home/plugins"
 
     # opencode loads TypeScript plugins and custom tools by real path.
     # Individual Nix-store symlinks break relative imports and node_modules
@@ -179,8 +179,6 @@ in
       ${pkgs.rsync}/bin/rsync -a --chmod=D755,F644 \
         ${source}/ "$opencode_home/plugins/"
     '') extraPluginSources}
-    ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
-      ${harness.opencode}/tools/ "$opencode_home/tools/"
     ${lib.optionalString (ponytailPackage != null) ''
       ${pkgs.rsync}/bin/rsync -a --delete --chmod=D755,F644 \
         ${ponytailPackage}/ "$opencode_home/plugins/ponytail/"

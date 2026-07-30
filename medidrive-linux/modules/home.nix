@@ -50,6 +50,11 @@ in
   home.stateVersion = "25.05";
   home.packages = (packages pkgs) ++ [ pkgs.ghostty.terminfo ];
 
+  # Go's `go install` target ($GOPATH/bin). Nix provides `go` itself, but the
+  # binaries it installs (go-cleanarch, nilaway, air, ...) land here and need to
+  # be on PATH for `make dev-tools` / `make lint` to work.
+  home.sessionPath = [ "${homeDirectory}/go/bin" ];
+
   home.sessionVariables = {
     LANG = "en_US.UTF-8";
     LC_ALL = "en_US.UTF-8";
@@ -527,7 +532,8 @@ in
       opencode = "${pkgs.opencode}/bin/opencode";
       opencode-linear = ''OPENCODE_CONFIG_CONTENT='{"mcp":{"linear":{"enabled":true}}}' ${pkgs.opencode}/bin/opencode'';
       opencode-postman = ''OPENCODE_CONFIG_CONTENT='{"mcp":{"postman":{"enabled":true}}}' ${pkgs.opencode}/bin/opencode'';
-      opencode-mcp = ''OPENCODE_CONFIG_CONTENT='{"mcp":{"linear":{"enabled":true},"postman":{"enabled":true}}}' ${pkgs.opencode}/bin/opencode'';
+      opencode-notion = ''OPENCODE_CONFIG_CONTENT='{"mcp":{"notion":{"enabled":true}}}' ${pkgs.opencode}/bin/opencode'';
+      opencode-mcp = ''OPENCODE_CONFIG_CONTENT='{"mcp":{"linear":{"enabled":true},"postman":{"enabled":true},"notion":{"enabled":true}}}' ${pkgs.opencode}/bin/opencode'';
     };
   };
 

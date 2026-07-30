@@ -20,6 +20,12 @@
       "url": "https://mcp.linear.app/mcp",
       "headers": {},
       "enabled": false
+    },
+    "notion": {
+      "type": "remote",
+      "url": "https://mcp.notion.com/mcp",
+      "headers": {},
+      "enabled": false
     }
   }
 }

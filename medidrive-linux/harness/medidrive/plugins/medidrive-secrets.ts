@@ -63,6 +63,18 @@ export default (async () => {
           mcp.linear.enabled = false
         }
       }
+
+      const notionToken = secrets["NOTION_TOKEN"]
+      if (mcp.notion && mcp.notion.type === "local") {
+        if (notionToken) {
+          mcp.notion.env = {
+            ...(mcp.notion.env ?? {}),
+            NOTION_TOKEN: notionToken,
+          }
+        } else {
+          mcp.notion.enabled = false
+        }
+      }
     },
   }
 }) satisfies Plugin

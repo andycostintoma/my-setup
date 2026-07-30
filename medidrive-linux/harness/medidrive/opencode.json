@@ -22,9 +22,13 @@
       "enabled": false
     },
     "notion": {
-      "type": "remote",
-      "url": "https://mcp.notion.com/mcp",
-      "headers": {},
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@notionhq/notion-mcp-server"
+      ],
+      "env": {},
       "enabled": false
     }
   }

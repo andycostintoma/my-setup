@@ -226,8 +226,12 @@ in
     ];
   };
 
-  home.activation.removeStaleOpenVikingUnit = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+  home.activation.removeStaleUserUnits = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+    ${pkgs.systemd}/bin/systemctl --user disable --now homebrew.ollama.service >/dev/null 2>&1 || true
     rm -f "${homeDirectory}/.config/systemd/user/openviking.service"
+    rm -f "${homeDirectory}/.config/systemd/user/homebrew.ollama.service"
+    ${pkgs.systemd}/bin/systemctl --user daemon-reload
+    ${pkgs.systemd}/bin/systemctl --user reset-failed homebrew.ollama.service >/dev/null 2>&1 || true
   '';
 
   home.activation.jetbrainsMedidriveProjectSync = lib.hm.dag.entryAfter [ "linkGeneration" ] ''

@@ -1,7 +1,7 @@
 ---
-description: Balanced OpenAI worker (GPT-5.4). Use for standard bounded coding work, repo exploration, tests, ordinary bug fixes, and implementation slices where the frontier orchestrator owns the final decision.
+description: Balanced OpenAI worker (GPT-5.6 Terra). Use for standard bounded coding work, repo exploration, tests, ordinary bug fixes, and implementation slices where the frontier orchestrator owns the final decision.
 mode: subagent
-model: openai/gpt-5.4
+model: openai/gpt-5.6-terra
 temperature: 0.2
 reasoningEffort: medium
 permission:

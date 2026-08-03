@@ -3,24 +3,24 @@
     "openai": {
       "label": "OpenAI",
       "routerAgent": "build-auto-openai",
-      "descriptionModels": "GPT-5.4 mini / GPT-5.4 / GPT-5.5",
+      "descriptionModels": "GPT-5.6 Luna / GPT-5.6 Terra / GPT-5.6 Sol",
       "tiers": {
         "low": {
           "agent": "openai-low",
-          "model": "openai/gpt-5.4-mini",
-          "display": "GPT-5.4 mini",
+          "model": "openai/gpt-5.6-luna",
+          "display": "GPT-5.6 Luna",
           "reasoningEffort": "low"
         },
         "medium": {
           "agent": "openai-medium",
-          "model": "openai/gpt-5.4",
-          "display": "GPT-5.4",
+          "model": "openai/gpt-5.6-terra",
+          "display": "GPT-5.6 Terra",
           "reasoningEffort": "medium"
         },
         "strong": {
           "agent": "openai-strong",
-          "model": "openai/gpt-5.5",
-          "display": "GPT-5.5",
+          "model": "openai/gpt-5.6-sol",
+          "display": "GPT-5.6 Sol",
           "reasoningEffort": "high"
         }
       }
@@ -28,7 +28,7 @@
     "anthropic": {
       "label": "Anthropic",
       "routerAgent": "build-auto-anthropic",
-      "descriptionModels": "Haiku 4.5 / Sonnet 5.0 / Opus 4.8",
+      "descriptionModels": "Haiku 4.5 / Sonnet 5 / Opus 5",
       "tiers": {
         "low": {
           "agent": "anthropic-low",
@@ -38,12 +38,12 @@
         "medium": {
           "agent": "anthropic-medium",
           "model": "anthropic/claude-sonnet-5",
-          "display": "Sonnet 5.0"
+          "display": "Sonnet 5"
         },
         "strong": {
           "agent": "anthropic-strong",
-          "model": "anthropic/claude-opus-4-8",
-          "display": "Opus 4.8"
+          "model": "anthropic/claude-opus-5",
+          "display": "Opus 5"
         }
       }
     }

@@ -1,6 +1,6 @@
 { username, packages }:
 
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 let
   # Wireshark (and other pcap tooling) needs read/write access to /dev/bpf*.
   # macOS resets these device permissions on boot, so keep a small LaunchDaemon
@@ -64,21 +64,19 @@ in
     };
   };
 
-  system.activationScripts.applications.text = lib.mkAfter ''
-    echo "setting up /Applications/WhatsApp.app..." >&2
-    ${lib.getExe pkgs.rsync} \
-      --checksum \
-      --copy-unsafe-links \
-      --archive \
-      --delete \
-      --chmod=-w \
-      --no-group \
-      --no-owner \
-      ${pkgs.whatsapp-for-mac}/Applications/WhatsApp.app/ \
-      /Applications/WhatsApp.app
-  '';
-
   services.tailscale.enable = true;
+
+  # WhatsApp: nixpkgs' whatsapp-for-mac lags Meta's server-enforced minimum
+  # client version and periodically breaks ("needs to be updated"). Homebrew's
+  # cask updates far more often, so let brew own it instead.
+  homebrew = {
+    enable = true;
+    casks = [ "whatsapp" ];
+    onActivation = {
+      autoUpdate = true;
+      upgrade = true;
+    };
+  };
 
   programs.zsh.enable = true;
 

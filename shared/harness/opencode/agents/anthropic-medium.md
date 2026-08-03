@@ -1,5 +1,5 @@
 ---
-description: Balanced Anthropic worker (Sonnet 5.0). Use for standard bounded coding work, repo exploration, tests, ordinary bug fixes, and implementation slices where the frontier orchestrator owns the final decision.
+description: Balanced Anthropic worker (Sonnet 5). Use for standard bounded coding work, repo exploration, tests, ordinary bug fixes, and implementation slices where the frontier orchestrator owns the final decision.
 mode: subagent
 model: anthropic/claude-sonnet-5
 temperature: 0.2

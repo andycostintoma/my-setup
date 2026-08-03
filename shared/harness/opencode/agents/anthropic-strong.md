@@ -1,7 +1,7 @@
 ---
-description: Strong Anthropic worker (Opus 4.8). Use for difficult bounded implementation, deep investigation slices, design review support, and high-stakes checks under frontier orchestration.
+description: Strong Anthropic worker (Opus 5). Use for difficult bounded implementation, deep investigation slices, design review support, and high-stakes checks under frontier orchestration.
 mode: subagent
-model: anthropic/claude-opus-4-8
+model: anthropic/claude-opus-5
 temperature: 0.2
 permission:
   edit: allow

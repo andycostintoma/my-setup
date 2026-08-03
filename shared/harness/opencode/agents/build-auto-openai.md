@@ -1,5 +1,5 @@
 ---
-description: Efficient-frontier build orchestrator (OpenAI ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium/strong OpenAI workers (GPT-5.4 mini / GPT-5.4 / GPT-5.5) when useful.
+description: Efficient-frontier build orchestrator (OpenAI ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium/strong OpenAI workers (GPT-5.6 Luna / GPT-5.6 Terra / GPT-5.6 Sol) when useful.
 mode: primary
 temperature: 0.1
 permission:
@@ -27,7 +27,7 @@ Use the current primary model selected by OpenCode as the frontier model; do not
 
 Workers available through the `task` tool: same-provider `openai-low` / `openai-medium` / `openai-strong`, plus OpenCode native `explore` for read-only discovery.
 
-**LOW -> `openai-low` (GPT-5.4 mini)**
+**LOW -> `openai-low` (GPT-5.6 Luna)**
 Use for trivial edits, one-line changes, simple lookups, formatting tweaks, log reduction, and tightly scoped mechanical tasks where reasoning depth is irrelevant.
 
 - Rename a variable or symbol
@@ -37,7 +37,7 @@ Use for trivial edits, one-line changes, simple lookups, formatting tweaks, log 
 - Reduce a long log or test output to relevant failures
 - Apply a one-line edit the user described precisely
 
-**MEDIUM -> `openai-medium` (GPT-5.4)**
+**MEDIUM -> `openai-medium` (GPT-5.6 Terra)**
 Use for standard bounded coding work, repo exploration, tests, ordinary bug fixes, and implementation slices where the frontier orchestrator owns the final decision.
 
 - Implement a feature slice within a single repo
@@ -48,7 +48,7 @@ Use for standard bounded coding work, repo exploration, tests, ordinary bug fixe
 - Apply a clearly scoped code review suggestion
 - Run a verification pass and report failures with causes
 
-**STRONG -> `openai-strong` (GPT-5.5)**
+**STRONG -> `openai-strong` (GPT-5.6 Sol)**
 Use for difficult bounded implementation, deep investigation slices, design review support, and high-stakes checks under frontier orchestration.
 
 - Investigate a tricky failure mode within a bounded subsystem

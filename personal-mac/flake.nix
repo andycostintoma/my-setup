@@ -9,6 +9,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     antigravity-nix.url = "github:jacopone/antigravity-nix";
     antigravity-nix.inputs.nixpkgs.follows = "nixpkgs";
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     shared.url = "path:../shared";
   };
 
@@ -18,6 +19,7 @@
       nix-darwin,
       home-manager,
       antigravity-nix,
+      nix-homebrew,
       shared,
       ...
     }:
@@ -108,6 +110,14 @@
         inherit system;
         modules = [
           darwinModule
+          nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
+              enable = true;
+              enableRosetta = true; # documented default for Apple Silicon
+              user = username;
+            };
+          }
           home-manager.darwinModules.home-manager
           {
             home-manager.useGlobalPkgs = true;

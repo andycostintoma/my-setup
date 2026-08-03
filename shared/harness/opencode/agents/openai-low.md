@@ -1,7 +1,7 @@
 ---
-description: Low-cost OpenAI worker (GPT-5.4 mini). Use for trivial edits, one-line changes, simple lookups, formatting tweaks, log reduction, and tightly scoped mechanical tasks where reasoning depth is irrelevant.
+description: Low-cost OpenAI worker (GPT-5.6 Luna). Use for trivial edits, one-line changes, simple lookups, formatting tweaks, log reduction, and tightly scoped mechanical tasks where reasoning depth is irrelevant.
 mode: subagent
-model: openai/gpt-5.4-mini
+model: openai/gpt-5.6-luna
 temperature: 0.2
 reasoningEffort: low
 permission:

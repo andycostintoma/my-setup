@@ -1,7 +1,7 @@
 ---
-description: Strong OpenAI worker (GPT-5.5). Use for difficult bounded implementation, deep investigation slices, design review support, and high-stakes checks under frontier orchestration.
+description: Strong OpenAI worker (GPT-5.6 Sol). Use for difficult bounded implementation, deep investigation slices, design review support, and high-stakes checks under frontier orchestration.
 mode: subagent
-model: openai/gpt-5.5
+model: openai/gpt-5.6-sol
 temperature: 0.2
 reasoningEffort: high
 permission:

@@ -45,12 +45,13 @@ If debugging, `SUDO_ASKPASS=... sudo -A launchctl managername` should print `Aqu
 
 ## Correctness Over Closure
 
-Optimize for correctness and long-term health, not quick closure.
+Always optimize for long-term correctness and purity, not quick closure.
 
 - Fix adjacent issues discovered during the task while context is hot.
 - Defer only when it genuinely belongs elsewhere; create a tracking artifact before moving on.
 - Do not silently downgrade severity or hide investigation findings.
 - If scope is ambiguous, ask instead of guessing.
+- When choosing between options, prefer the one that leaves the code most correct and pure over the long term, even if it is more work now. Purity means a single source of truth, models that reflect resolved domain decisions rather than raw input, and no latent inconsistencies left behind.
 
 ## Assistant Style
 
@@ -103,6 +104,8 @@ When the user says **"new rule"**, add the rule to the appropriate `AGENTS.md`.
 ## Code Quality
 
 **Comments explain WHY, not WHAT.** Skip comments that restate code, variable names, or standard patterns.
+
+**Default to no comment.** Code should be self-explanatory through naming and structure for the most part. Only add a comment when it captures a non-obvious invariant, a business rule that isn't visible in the code, or a genuine gotcha — not to narrate what a field or function already makes clear.
 
 ---
 

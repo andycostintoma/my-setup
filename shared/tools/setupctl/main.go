@@ -20,8 +20,6 @@ func run(args []string) error {
 	}
 
 	switch args[0] {
-	case "update-release":
-		return updateRelease(args[1:])
 	case "update-pins":
 		return updatePins(args[1:])
 	case "help", "-h", "--help":
@@ -40,6 +38,5 @@ func usageText() string {
 	return strings.TrimSpace(`Usage: setupctl <command> [options]
 
 Commands:
-  update-release  Update flake.nix to the latest compatible Nix/Home Manager release
   update-pins     Update local-only package versions and hashes`)
 }

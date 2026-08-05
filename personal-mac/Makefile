@@ -18,10 +18,6 @@ PIN_UPDATE_PACKAGES = \
 	nixpkgs\#nodejs \
 	nixpkgs\#p7zip \
 	nixpkgs\#xar
-RELEASE_UPDATE_PACKAGES = \
-	nixpkgs\#git \
-	nixpkgs\#go
-
 .PHONY: help bootstrap install-clt install-nix fmt check check-nix switch system-switch home-switch update update-inputs update-pins audit
 
 help:
@@ -84,7 +80,6 @@ update: update-inputs update-pins audit
 
 update-inputs:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
-	$(NIX_CMD) shell $(RELEASE_UPDATE_PACKAGES) -c go -C $(REPO_ROOT)/shared/tools/setupctl run . update-release --repo $(FLAKE); \
 	$(NIX_CMD) flake update --flake $(FLAKE_REF) $(FLAKE_UPDATE_ARGS)
 
 update-pins:

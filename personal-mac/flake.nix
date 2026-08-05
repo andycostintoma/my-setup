@@ -24,7 +24,6 @@
       ...
     }:
     let
-      releaseVersion = "26.05";
       username = "andytoma";
       host = "Andys-Mac-mini";
       system = "aarch64-darwin";
@@ -33,23 +32,6 @@
           shared.outPath
         else
           shared.outPath + "/shared";
-      releaseRefs = {
-        nixpkgs = "nixpkgs-${releaseVersion}-darwin";
-        home-manager = "release-${releaseVersion}";
-      };
-      lockedRefs =
-        let
-          lock = builtins.fromJSON (builtins.readFile ./flake.lock);
-          rootInputs = lock.nodes.root.inputs;
-          rootNixpkgs = rootInputs.nixpkgs;
-          rootHomeManager = rootInputs.home-manager;
-        in
-        {
-          nixpkgs = lock.nodes.${rootNixpkgs}.original.ref or "";
-          home-manager = lock.nodes.${rootHomeManager}.original.ref or "";
-        };
-      releaseRefsMatch =
-        lockedRefs.nixpkgs == releaseRefs.nixpkgs && lockedRefs.home-manager == releaseRefs.home-manager;
       pkgs = import nixpkgs { inherit system; };
       sharedHarness = {
         shared = sharedRoot + "/harness/shared";
@@ -85,18 +67,6 @@
       };
     in
     {
-      checks.${system}.release-refs-match =
-        if releaseRefsMatch then
-          pkgs.runCommand "release-refs-match" { } ''
-            touch "$out"
-          ''
-        else
-          throw ''
-            flake.lock release refs must match releaseVersion ${releaseVersion}.
-            nixpkgs: expected ${releaseRefs.nixpkgs}, got ${lockedRefs.nixpkgs}
-            home-manager: expected ${releaseRefs.home-manager}, got ${lockedRefs.home-manager}
-          '';
-
       packages.${system} = {
         setupctl = sharedPackages.setupctl pkgs;
         epub-to-markdown = packages.epubToMarkdown pkgs;

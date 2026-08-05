@@ -4,7 +4,6 @@
   extraDocSources ? [ ],
   extraPluginSources ? [ ],
   extraSkillSources ? [ ],
-  contextBrokerConfig ? null,
   opencodeConfig ? harness.opencode + "/opencode.json",
   ponytailPackage ? null,
 }:
@@ -72,18 +71,6 @@ let
     );
 in
 {
-  # Secret OpenViking config stays local in ~/.openviking/ov.conf.
-  home.file.".openviking/ovcli.conf".text = ''
-    {"url":"http://127.0.0.1:1933"}
-  '';
-
-  home.file.".openviking/ovcli.settings.conf" = {
-    force = true;
-    text = ''
-      {"language":"en"}
-    '';
-  };
-
   home.file.".config/opencode/opencode.json" = managed opencodeConfig;
   home.file.".config/opencode/AGENTS.md" = {
     text = opencodeAgentsText;
@@ -93,7 +80,6 @@ in
   home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
   home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");
   home.file.".config/opencode/node_modules" = managed (opencodeNodeModules + "/node_modules");
-  home.file.".config/opencode/services" = managed (harness.opencode + "/services");
   home.file.".config/opencode/dcp.jsonc" = managed (harness.opencode + "/dcp.jsonc");
   home.file.".config/opencode/docs" = managed opencodeDocs;
   home.file.".config/opencode/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
@@ -101,9 +87,6 @@ in
   home.file.".config/opencode/agents" = managed opencodeAgents;
   home.file.".config/opencode/skills" = managed opencodeSkills;
   home.file.".config/opencode/commands" = managed opencodeCommands;
-  home.file.".config/opencode/context-broker.json".text = builtins.toJSON (
-    if contextBrokerConfig == null then { } else contextBrokerConfig
-  );
 
   home.activation.removeOldOpencodeHarnessDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
     set -eu
@@ -124,24 +107,13 @@ in
     set -eu
 
     opencode_home="${homeDirectory}/.config/opencode"
-    state_dir="${homeDirectory}/.local/state/opencode/openviking"
-    install -d -m 0755 "$opencode_home/plugins" "$state_dir"
-
-    for file in openviking-memory.log openviking-session-map.json; do
-      if [ -e "$opencode_home/plugins/$file" ] && [ ! -e "$state_dir/$file" ]; then
-        mv "$opencode_home/plugins/$file" "$state_dir/$file"
-      fi
-      rm -f "$opencode_home/plugins/$file"
-    done
+    install -d -m 0755 "$opencode_home/plugins"
 
     for file in \
       auto-explore.ts \
       auto-recall.ts \
       claude-auth.ts \
       graphify.ts \
-      openviking-context.ts \
-      openviking-config.json \
-      openviking-memory.ts \
       rtk.ts \
       sound-notify.ts
     do
@@ -153,10 +125,10 @@ in
     # linkGeneration. Do not rm inside that read-only symlinked tree.
     rm -f \
       "$opencode_home/SETUP.md" \
-      "$opencode_home/ollama-opencode-proxy.js" \
-      "$opencode_home/ollama-opencode-proxy.ts" \
-      "$opencode_home/plugins/graphify.js" \
-      "$opencode_home/plugins/openviking-context.js"
+      "$opencode_home/plugins/graphify.js"
+
+    rm -rf "$opencode_home/plugins/openviking" "$opencode_home/plugins/automation" "$opencode_home/services"
+    rm -rf "${homeDirectory}/.local/state/opencode/openviking" "${homeDirectory}/.local/state/opencode/context-broker"
 
     if [ -e "$opencode_home/vendor" ] || [ -L "$opencode_home/vendor" ]; then
       chmod -R u+w "$opencode_home/vendor" 2>/dev/null || true

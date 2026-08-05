@@ -5,14 +5,12 @@
   claudeModule,
   codexModule,
   antigravityModule,
-  openviking,
   packages,
 }:
 
 { pkgs, lib, ... }:
 let
   homeDirectory = "/home/${username}";
-  openvikingPackage = openviking pkgs;
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
   medidriveOpencodeConfig = builtins.fromJSON (builtins.readFile ../harness/medidrive/opencode.json);
   mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig medidriveOpencodeConfig // {
@@ -239,35 +237,6 @@ in
       "${homeDirectory}/.local/bin/jetbrains-sync-medidrive-iml"
     fi
   '';
-
-  systemd.user.services.openviking = {
-    Unit = {
-      Description = "OpenViking server";
-      After = [ "network-online.target" ];
-      Wants = [ "network-online.target" ];
-    };
-    Service = {
-      Type = "simple";
-      WorkingDirectory = homeDirectory;
-      ExecStart = "${openvikingPackage}/bin/openviking-server --config ${homeDirectory}/.openviking/ov.conf --host 127.0.0.1 --port 1933";
-      Restart = "on-failure";
-      RestartSec = "5s";
-      Environment = [
-        "HOME=${homeDirectory}"
-        "PATH=${
-          lib.makeBinPath [
-            pkgs.coreutils
-            pkgs.bash
-          ]
-        }:/usr/bin:/bin:/usr/sbin:/sbin"
-      ];
-      StandardOutput = "append:${homeDirectory}/.local/state/openviking/openviking.log";
-      StandardError = "append:${homeDirectory}/.local/state/openviking/openviking.log";
-    };
-    Install = {
-      WantedBy = [ "default.target" ];
-    };
-  };
 
   # JetBrains remote backends occasionally wedge after repeated reconnects:
   # the SSH tunnel still works, but the backend accumulates CLOSE_WAIT sockets

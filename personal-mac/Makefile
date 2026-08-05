@@ -100,9 +100,5 @@ audit:
 	$(NIX_CMD) eval $(FLAKE_REF)#darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath $(FLAKE_ARGS) --raw >/dev/null; \
 	printf '%s\n' '== opencode startup =='; \
 	opencode debug startup --print-logs --log-level DEBUG >/dev/null; \
-	printf '%s\n' '== opencode plugin state =='; \
-	test ! -e $(HOME)/.config/opencode/plugins/openviking-memory.log; \
-	test ! -e $(HOME)/.config/opencode/plugins/openviking-session-map.json; \
-	test -e $(HOME)/.local/state/opencode/openviking/openviking-memory.log; \
 	printf '%s\n' '== git status =='; \
 	git -C $(REPO_ROOT) status --short --branch

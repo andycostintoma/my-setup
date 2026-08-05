@@ -6,14 +6,12 @@
   codexModule,
   antigravityModule,
   packages,
-  openviking,
   ponytail,
 }:
 
 { pkgs, lib, ... }:
 let
   homeDirectory = "/Users/${username}";
-  openvikingPackage = openviking pkgs;
   ponytailPackage = ponytail pkgs;
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
   localOpencodeConfig = builtins.fromJSON (builtins.readFile ./opencode.local.json);
@@ -403,30 +401,6 @@ in
       ${pkgs.defaultbrowser}/bin/defaultbrowser chrome
     fi
   '';
-
-  launchd.agents.openviking = {
-    enable = true;
-    config = {
-      ProgramArguments = [
-        "${openvikingPackage}/bin/openviking-server"
-        "--config"
-        "/Users/${username}/.openviking/ov.conf"
-        "--host"
-        "127.0.0.1"
-        "--port"
-        "1933"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      WorkingDirectory = "/Users/${username}";
-      StandardOutPath = "/Users/${username}/Library/Logs/openviking-server.log";
-      StandardErrorPath = "/Users/${username}/Library/Logs/openviking-server.error.log";
-      EnvironmentVariables = {
-        HOME = "/Users/${username}";
-        PATH = "${pkgs.coreutils}/bin:${pkgs.bash}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-      };
-    };
-  };
 
   launchd.agents.opencode-web = {
     enable = false;

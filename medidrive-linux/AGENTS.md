@@ -10,8 +10,6 @@ These instructions apply to the `medidrive-linux/` VM configuration subtree in `
 - Make durable VM changes through this flake, not by editing generated files under `~/.config/opencode/` or installing tools globally.
 - Shared agentic harness assets live under `../shared/` in this repo.
 - Keep only VM/MediDrive-specific agent overlays in this subtree, for example `harness/medidrive/`.
-- Keep secrets out of this repository. Local OpenViking secrets belong in `~/.openviking/ov.conf`.
-- OpenViking is an explicit shim exception: Nix provides `uv`/`uvx`, and the version is pinned in `shared/modules/pins.nix`.
 
 ## Common Commands
 

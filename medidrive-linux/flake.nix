@@ -46,7 +46,6 @@
           antigravityModule
           ;
         harness = sharedHarness;
-        openviking = sharedPackages.openviking;
         packages = packages.user;
       };
     in

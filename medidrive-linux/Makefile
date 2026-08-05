@@ -45,6 +45,5 @@ audit:
 	$(NIX_CMD) eval $(FLAKE_REF)#homeConfigurations.medidrive.activationPackage.drvPath $(FLAKE_ARGS) --raw >/dev/null; \
 	printf '%s\n' '== tools =='; \
 	command -v opencode >/dev/null; \
-	command -v ov >/dev/null; \
 	printf '%s\n' '== git status =='; \
 	git -C $(REPO_ROOT) status --short --branch

@@ -8,7 +8,6 @@ let
 in
 rec {
   inherit (sharedPackages)
-    openviking
     ponytail
     setupctl
     ;

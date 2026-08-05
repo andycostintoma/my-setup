@@ -77,10 +77,7 @@
           ;
         harness = sharedHarness;
         packages = packages.user;
-        inherit (packages)
-          openviking
-          ponytail
-          ;
+        inherit (packages) ponytail;
       };
       darwinModule = import ./modules/darwin.nix {
         inherit username;

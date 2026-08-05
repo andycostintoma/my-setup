@@ -53,47 +53,6 @@ rec {
       gh
     ];
 
-  # OpenViking's PyPI wheel carries native Rust/C++ artifacts and Python
-  # dependencies that are not all packaged in nixpkgs yet. Keep this as the
-  # one documented package-manager shim exception: Nix provides uv/uvx and
-  # the invoked OpenViking version is pinned here.
-  openviking =
-    pkgs:
-    let
-      version = pins.openviking.version;
-      uvxOpenViking = "${pkgs.uv}/bin/uvx --from openviking==${version}";
-    in
-    pkgs.runCommand "openviking-${version}" { } ''
-      mkdir -p $out/bin $out/hook-bin
-
-      cat > $out/bin/ov <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} ov "$@"
-      EOF
-
-      cat > $out/bin/openviking <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} openviking "$@"
-      EOF
-
-      cat > $out/bin/openviking-server <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} openviking-server "$@"
-      EOF
-
-      cat > $out/bin/vikingbot <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} vikingbot "$@"
-      EOF
-
-      cat > $out/hook-bin/python3 <<'EOF'
-      #!${pkgs.runtimeShell}
-      exec ${uvxOpenViking} python "$@"
-      EOF
-
-      chmod +x $out/bin/ov $out/bin/openviking $out/bin/openviking-server $out/bin/vikingbot $out/hook-bin/python3
-    '';
-
   ponytail =
     pkgs:
     pkgs.stdenvNoCC.mkDerivation {
@@ -133,7 +92,6 @@ rec {
     pkgs:
     fromNixpkgs pkgs
     ++ [
-      (openviking pkgs)
       (setupctl pkgs)
     ]
     ++ pkgs.lib.optionals (antigravityCli != null) [ antigravityCli ];

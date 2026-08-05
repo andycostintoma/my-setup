@@ -12,8 +12,7 @@ These instructions apply to this entire `my-setup` configuration repository.
 - Mac-specific agent overlays live under `personal-mac/`; MediDrive Linux overlays live under `medidrive-linux/`.
 - Do not edit generated targets such as `~/.config/opencode/` directly when the source exists in this repo.
 - Do not use Homebrew, global npm installs, global Go installs, Cargo installs, pip, pipx, uv tool installs, or ad-hoc curl installers unless the user explicitly approves an exception.
-- OpenViking is the current explicit shim exception: Nix provides `uv`/`uvx`, and the machine flakes pin the OpenViking version invoked by the wrapper.
-- Keep secrets out of this repository. Local OpenViking secrets belong in `~/.openviking/ov.conf`.
+- Keep secrets out of this repository.
 
 ## Common Commands
 

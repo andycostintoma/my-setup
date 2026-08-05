@@ -5,8 +5,6 @@
   "plugin": [
     "openrtk",
     "@tarquinen/opencode-dcp@latest",
-    "./plugins/openviking/memory.ts",
-    "./plugins/automation/context-broker.ts",
     "opencode-claude-auth@latest"
   ],
   "permission": "allow",

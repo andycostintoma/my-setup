@@ -1,7 +1,7 @@
 {
   "type": "module",
   "dependencies": {
-    "@ai-sdk/openai-compatible": "2.0.48",
-    "@opencode-ai/plugin": "1.16.0"
+    "@ai-sdk/openai-compatible": "^3.0.23",
+    "@opencode-ai/plugin": "^1.18.13"
   }
 }

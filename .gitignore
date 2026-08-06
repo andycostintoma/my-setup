@@ -9,3 +9,6 @@ result-*
 
 # Built Go binaries
 personal-mac/tools/pdf-to-markdown/pdf-to-markdown
+
+# JetBrains project files
+.idea/

@@ -37,7 +37,9 @@ rec {
       jetbrains-toolbox
       libreoffice-bin
       teams
-      obsidian
+      # ponytail: obsidian is broken in nixpkgs-unstable on darwin -- the app
+      # unpack lands in "Obsidian <version>-universal/" and the builder looks
+      # for Obsidian.app at the root. Re-add once upstream fixes sourceRoot.
       orbstack
       postman
       qbittorrent

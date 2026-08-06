@@ -33,6 +33,7 @@
       };
       sharedPackages = import (sharedRoot + "/modules/packages.nix") { };
       packages = import ./modules/packages.nix { inherit sharedPackages; };
+      homeBaseModule = sharedRoot + "/modules/home-base.nix";
       opencodeModule = sharedRoot + "/modules/opencode.nix";
       claudeModule = sharedRoot + "/modules/claude.nix";
       codexModule = sharedRoot + "/modules/codex.nix";
@@ -40,6 +41,7 @@
       homeModule = import ./modules/home.nix {
         inherit
           username
+          homeBaseModule
           opencodeModule
           claudeModule
           codexModule

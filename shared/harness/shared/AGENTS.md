@@ -16,30 +16,13 @@ Never do these without explicit user permission:
 
 ## Workflow Hygiene
 
-- `AGENTS.md` = stable policy; commands/skills = execution playbooks; `PLAN.md` = active state only.
+- `AGENTS.md` = stable policy; commands/skills = execution playbooks.
 - On this machine, Nix and Home Manager are the source of truth for all durable system, user, package, shell, dotfile, and agent-harness configuration.
 - Keep shared AI/agent setup under `shared/` in `my-setup`: global policy, commands, skills, agents, agent plugins, package wrappers, and stable harness config.
 - Keep machine-specific overlays under `personal-mac/` for the local Mac and `medidrive-linux/` for the MediDrive VM.
 - Nix/Home Manager publishes shared agentic files from `my-setup` into each active harness. Do not edit generated targets such as `~/.config/opencode/`, `~/.gemini/`, or `~/.claude/` directly when source exists in this repo.
 - Cross-repo research: search/index first, then read only what is needed. Use subagents for broad exploration.
 - When you find a structural smell, scan sibling flows for the same pattern and fix consistently.
-
-### Privileged macOS Commands
-
-For privileged commands that must run inside the user's interactive macOS Aqua session, use `sudo -A` with a GUI askpass helper instead of `osascript ... with administrator privileges`. This matters for `darwin-rebuild switch`: nix-darwin may touch `/Applications/Nix Apps/*.app`, and TCC App Management can reject non-Aqua root processes.
-
-Create or reuse an askpass helper under `/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/my-setup-askpass.sh`:
-
-```sh
-#!/bin/sh
-osascript \
-  -e 'Tell application "System Events" to display dialog "Administrator password required" default answer "" with hidden answer buttons {"OK"} default button "OK"' \
-  -e 'text returned of result'
-```
-
-Then run privileged commands from the current terminal process with `SUDO_ASKPASS=/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/my-setup-askpass.sh sudo -A <command>`. For example: `DR=$(command -v darwin-rebuild); SUDO_ASKPASS=/var/folders/6t/kf485w6x5n1_n28tsq6_12sw0000gn/T/my-setup-askpass.sh sudo -A "$DR" switch --flake path:/Users/andytoma/my-setup/personal-mac`.
-
-If debugging, `SUDO_ASKPASS=... sudo -A launchctl managername` should print `Aqua`, not `System`.
 
 ---
 

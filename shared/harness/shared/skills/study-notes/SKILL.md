@@ -58,7 +58,7 @@ when ALL of the following are true:
 
 - [ ] You have actually viewed the image (not inferred its content from the PDF text extraction)
 - [ ] It contains a diagram, truth table, circuit schematic, code listing, or other visual that conveys information the prose cannot replicate well
-- [ ] It is not a navigation/outline slide (chapter menu, section divider, agenda, "Theory / Practice / Project" layout; e.g., Slide 36 in Lecture 1)
+- [ ] It is not a navigation/outline slide (chapter menu, section divider, agenda, "Theory / Practice / Project" layout)
 - [ ] It is not a purely motivational/decorative slide (portraits, analogies without diagrams)
 - [ ] It genuinely adds something the book's own figures do not already show
 
@@ -66,10 +66,12 @@ If uncertain, default to **no figure** — prose is preferable to a distracting 
 redundant image.
 
 ### Handling User Feedback on Figures
-- **Do not overreact to negative feedback:** If the user points out that a specific slide figure adds no value (e.g. "slide 36 adds nothing"), do NOT completely wipe out all slide figures from the notes.
+- **Do not overreact to negative feedback:** If the user points out that a specific slide figure adds no value, do NOT completely wipe out all slide figures from the notes.
 - **Review and refine:** Remove only the specific low-value or redundant slides identified, and make sure to look for and keep the high-value diagrams (e.g., interface/implementation splits, simulator GUI callouts, test/compare script flows) that actually complement the learning notes.
 
 ### Figure extraction workflow
+
+Requires `pdftoppm` (`poppler-utils`), currently installed on the Mac only.
 
 ```bash
 # 1. Extract slide text to identify candidate page numbers

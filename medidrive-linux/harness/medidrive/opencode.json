@@ -1,7 +1,6 @@
 {
   "plugin": [
-    "./plugins/medidrive-secrets.ts",
-    "./plugins/sound-notify.ts"
+    "./plugins/medidrive-secrets.ts"
   ],
   "mcp": {
     "postman": {

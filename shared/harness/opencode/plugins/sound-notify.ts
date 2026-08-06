@@ -1,6 +1,10 @@
 import type { Plugin, PluginInput } from "@opencode-ai/plugin"
 
-const DEFAULT_SOUND_COMMAND = "afplay /System/Library/Sounds/Glass.aiff"
+// ponytail: macOS gets a built-in default; elsewhere the sound is opt-in via
+// OPENCODE_NOTIFY_SOUND_COMMAND (the VM points it at the SSH tunnel back to the
+// Mac), falling back to a terminal bell.
+const DEFAULT_SOUND_COMMAND =
+  process.platform === "darwin" ? "afplay /System/Library/Sounds/Glass.aiff" : ""
 const SOUND_COMMAND = process.env.OPENCODE_NOTIFY_SOUND_COMMAND?.trim() || DEFAULT_SOUND_COMMAND
 const MIN_SOUND_GAP_MS = 750
 
@@ -9,7 +13,12 @@ const playSound = async (ctx: PluginInput, lastPlayedAt: { value: number }) => {
   if (now - lastPlayedAt.value < MIN_SOUND_GAP_MS) return
 
   lastPlayedAt.value = now
-  await ctx.$`sh -lc ${SOUND_COMMAND}`.quiet().nothrow()
+  if (SOUND_COMMAND) {
+    await ctx.$`sh -lc ${SOUND_COMMAND}`.quiet().nothrow()
+    return
+  }
+
+  process.stderr.write("\x07")
 }
 
 export const SoundNotifyPlugin: Plugin = async (ctx) => {

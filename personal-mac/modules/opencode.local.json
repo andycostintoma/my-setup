@@ -1,5 +1,0 @@
-{
-  "plugin": [
-    "./plugins/automation/sound-notify.ts"
-  ]
-}

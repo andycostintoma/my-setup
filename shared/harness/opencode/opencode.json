@@ -5,7 +5,8 @@
   "plugin": [
     "openrtk",
     "@tarquinen/opencode-dcp@latest",
-    "opencode-claude-auth@latest"
+    "opencode-claude-auth@latest",
+    "./plugins/sound-notify.ts"
   ],
   "permission": "allow",
   "tool_output": {

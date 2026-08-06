@@ -1,6 +1,7 @@
 {
   username,
   harness,
+  homeBaseModule,
   opencodeModule,
   claudeModule,
   codexModule,
@@ -20,6 +21,14 @@ let
 in
 {
   imports = [
+    (import homeBaseModule {
+      inherit homeDirectory;
+      gitEmail = "andy.toma@medidrive.com";
+      extraGitConfig = ''
+        [url "ssh://git@github.com/MediDrive-Tech/"]
+            insteadOf = https://github.com/MediDrive-Tech/
+      '';
+    })
     (import opencodeModule {
       inherit
         homeDirectory
@@ -29,19 +38,17 @@ in
       extraPluginSources = [ ../harness/medidrive/plugins ];
       extraSkillSources = [ ../harness/medidrive/skills ];
     })
-    (import claudeModule {
-      inherit homeDirectory harness;
+  ]
+  ++ map
+    (module: import module {
+      inherit harness;
       extraSkillSources = [ ../harness/medidrive/skills ];
     })
-    (import codexModule {
-      inherit homeDirectory harness;
-      extraSkillSources = [ ../harness/medidrive/skills ];
-    })
-    (import antigravityModule {
-      inherit homeDirectory harness;
-      extraSkillSources = [ ../harness/medidrive/skills ];
-    })
-  ];
+    [
+      claudeModule
+      codexModule
+      antigravityModule
+    ];
 
   home.username = username;
   home.homeDirectory = homeDirectory;
@@ -402,35 +409,6 @@ in
     };
   };
 
-  home.file.".gitconfig" = {
-    force = true;
-    text = ''
-      [user]
-          name = Andy Toma
-          email = andy.toma@medidrive.com
-
-      [init]
-          defaultBranch = main
-
-      [pull]
-          rebase = true
-
-      [credential]
-          helper =
-
-      [url "ssh://git@github.com/MediDrive-Tech/"]
-          insteadOf = https://github.com/MediDrive-Tech/
-      [core]
-          excludesfile = ${homeDirectory}/.gitignore_global
-          editor = vim
-    '';
-  };
-
-  home.file.".gitignore_global" = {
-    force = true;
-    text = "";
-  };
-
   home.file.".ssh/config" = {
     force = true;
     text = ''
@@ -465,26 +443,10 @@ in
     '';
   };
 
-  programs.home-manager.enable = true;
-
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-    enableZshIntegration = true;
-  };
-
   programs.zsh = {
-    enable = true;
     envExtra = ''
       export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin:''${PATH:-}"
     '';
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
-    oh-my-zsh = {
-      enable = true;
-      theme = "robbyrussell";
-      plugins = [ "git" ];
-    };
     initContent = lib.mkMerge [
       (lib.mkOrder 500 ''
         if [[ $- != *i* ]]; then
@@ -511,8 +473,5 @@ in
   };
 
   programs.bash.enable = true;
-  programs.git.enable = true;
-  programs.gh.enable = true;
   xdg.configFile."gh/config.yml".force = true;
-  programs.jq.enable = true;
 }

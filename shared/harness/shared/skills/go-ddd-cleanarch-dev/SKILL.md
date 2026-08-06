@@ -172,7 +172,7 @@ Repositories load, map, and persist. They do not validate business rules or deci
 When the project uses mutation/commit-plan patterns, repositories return mutations and never apply them:
 
 ```go
-func (r *OrderRepo) UpdateMut(order *domain.Order) *spanner.Mutation {
+func (r *OrderRepo) UpdateMut(order *domain.Order) *store.Mutation {
     updates := map[string]any{
         "status":     order.Status(),
         "updated_at": order.UpdatedAt(),
@@ -187,7 +187,7 @@ Wrong:
 ```go
 func (r *OrderRepo) Update(order *domain.Order) error {
     mut := r.model.UpdateMut(order.ID(), updates)
-    _, err := r.client.Apply(ctx, []*spanner.Mutation{mut})
+    _, err := r.client.Apply(ctx, []*store.Mutation{mut})
     return err
 }
 ```
@@ -262,14 +262,12 @@ func (o *Order) Activate(now time.Time) error {
 In the usecase, commit events atomically with persistence using the project's existing mechanism:
 
 ```go
-if err := plan.AddAggregateSideEffects(
-    order,
-    req.TenantID,
-    req.OrderID,
-    it.eventRepo,
-    it.activityRepo,
-); err != nil {
-    return err
+for _, evt := range order.Events.Drain() {
+    mut, err := it.eventRepo.InsertMut(req.TenantID, req.OrderID, evt)
+    if err != nil {
+        return err
+    }
+    plan.Add(mut)
 }
 ```
 
@@ -567,14 +565,12 @@ When the project has an outbox or side-effect mechanism:
 ```go
 o.Events.Add(OrderPlaced{OrderID: o.ID(), OccurredAt: now})
 
-if err := plan.AddAggregateSideEffects(
-    o,
-    req.TenantID,
-    req.ID,
-    it.noteRepo,
-    it.activityRepo,
-); err != nil {
-    return err
+for _, evt := range o.Events.Drain() {
+    mut, err := it.outboxRepo.InsertMut(req.TenantID, req.ID, evt)
+    if err != nil {
+        return err
+    }
+    plan.Add(mut)
 }
 ```
 

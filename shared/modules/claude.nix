@@ -1,7 +1,5 @@
 {
-  homeDirectory,
   harness,
-  extraCommandSources ? [ ],
   extraSkillSources ? [ ],
   ponytailPackage ? null,
 }:
@@ -37,7 +35,6 @@ let
     [
       (harness.shared + "/commands")
     ]
-    ++ extraCommandSources
     ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/.opencode/command") ]
   );
 
@@ -55,17 +52,4 @@ in
     force = true;
   };
   home.file.".claude/plugins/ponytail" = lib.mkIf (ponytailPackage != null) (managed ponytailPackage);
-
-  home.activation.removeOldClaudeHarnessDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
-    set -eu
-
-    for target in \
-      ${homeDirectory}/.claude/skills \
-      ${homeDirectory}/.claude/commands
-    do
-      if [ -e "$target" ] || [ -L "$target" ]; then
-        rm -rf "$target"
-      fi
-    done
-  '';
 }

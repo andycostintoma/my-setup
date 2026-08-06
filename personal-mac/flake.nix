@@ -27,11 +27,7 @@
       username = "andytoma";
       host = "Andys-Mac-mini";
       system = "aarch64-darwin";
-      sharedRoot =
-        if builtins.pathExists (shared.outPath + "/harness") then
-          shared.outPath
-        else
-          shared.outPath + "/shared";
+      sharedRoot = shared.outPath;
       pkgs = import nixpkgs { inherit system; };
       sharedHarness = {
         shared = sharedRoot + "/harness/shared";
@@ -45,6 +41,7 @@
         inherit sharedPackages;
         antigravity-app = antigravity-nix.packages.${system}.google-antigravity;
       };
+      homeBaseModule = sharedRoot + "/modules/home-base.nix";
       opencodeModule = sharedRoot + "/modules/opencode.nix";
       claudeModule = sharedRoot + "/modules/claude.nix";
       codexModule = sharedRoot + "/modules/codex.nix";
@@ -52,6 +49,7 @@
       homeModule = import ./modules/home.nix {
         inherit
           username
+          homeBaseModule
           opencodeModule
           claudeModule
           codexModule

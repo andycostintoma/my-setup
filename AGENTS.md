@@ -11,7 +11,6 @@ These instructions apply to this entire `my-setup` configuration repository.
 - Shared agentic harness assets live under `shared/` in this repo.
 - Mac-specific agent overlays live under `personal-mac/`; MediDrive Linux overlays live under `medidrive-linux/`.
 - Do not edit generated targets such as `~/.config/opencode/` directly when the source exists in this repo.
-- Do not use Homebrew, global npm installs, global Go installs, Cargo installs, pip, pipx, uv tool installs, or ad-hoc curl installers unless the user explicitly approves an exception.
 - Keep secrets out of this repository.
 
 ## Common Commands
@@ -43,8 +42,4 @@ These instructions apply to this entire `my-setup` configuration repository.
 - When changing published harness files, update the source under `shared/`, `personal-mac/`, or `medidrive-linux/`, not the linked or rsynced destination.
 - Do not manually edit `flake.lock` unless updating inputs intentionally.
 
-## Git Rules
 
-- Do not commit, push, or create PRs unless the user explicitly asks.
-- Do not revert or discard user changes unless explicitly requested.
-- Use Conventional Commits when asked to commit: `<type>[scope]: <description>`.

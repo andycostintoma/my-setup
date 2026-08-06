@@ -1,8 +1,6 @@
 { sharedPackages }:
 
 rec {
-  inherit (sharedPackages) setupctl;
-
   # google-cloud-sdk with the GKE auth plugin so `kubectl` can pull credentials
   # via `gcloud container clusters get-credentials`. Kept as a custom expression
   # because the plugin must be wired through `withExtraComponents`.

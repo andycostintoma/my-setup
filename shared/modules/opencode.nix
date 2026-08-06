@@ -1,10 +1,9 @@
 {
   homeDirectory,
   harness,
-  extraDocSources ? [ ],
   extraPluginSources ? [ ],
   extraSkillSources ? [ ],
-  opencodeConfig ? harness.opencode + "/opencode.json",
+  opencodeConfig,
   ponytailPackage ? null,
 }:
 
@@ -41,13 +40,6 @@ let
     ++ extraSkillSources
   );
 
-  opencodeDocs = mergeHarnessDir "opencode-docs" (
-    [
-      (harness.opencode + "/docs")
-    ]
-    ++ extraDocSources
-  );
-
   opencodeCommands = mergeHarnessDir "opencode-commands" (
     [
       (harness.shared + "/commands")
@@ -76,64 +68,24 @@ in
     text = opencodeAgentsText;
     force = true;
   };
-  home.file.".config/opencode/settings.json" = managed (harness.opencode + "/settings.json");
   home.file.".config/opencode/package.json" = managed (harness.opencode + "/package.json");
   home.file.".config/opencode/package-lock.json" = managed (harness.opencode + "/package-lock.json");
   home.file.".config/opencode/node_modules" = managed (opencodeNodeModules + "/node_modules");
   home.file.".config/opencode/dcp.jsonc" = managed (harness.opencode + "/dcp.jsonc");
-  home.file.".config/opencode/docs" = managed opencodeDocs;
-  home.file.".config/opencode/LOCAL-STACK.md" = managed (harness.shared + "/LOCAL-STACK.md");
+  home.file.".config/opencode/docs" = managed (harness.opencode + "/docs");
   home.file.".config/opencode/scripts" = managed (harness.opencode + "/scripts");
   home.file.".config/opencode/agents" = managed opencodeAgents;
   home.file.".config/opencode/skills" = managed opencodeSkills;
   home.file.".config/opencode/commands" = managed opencodeCommands;
 
-  home.activation.removeOldOpencodeHarnessDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
-    set -eu
-
-    for target in \
-      ${homeDirectory}/.config/opencode/agents \
-      ${homeDirectory}/.config/opencode/commands \
-      ${homeDirectory}/.config/opencode/scripts \
-      ${homeDirectory}/.config/opencode/skills
-    do
-      if [ -e "$target" ] || [ -L "$target" ]; then
-        rm -rf "$target"
-      fi
-    done
-  '';
-
-  home.activation.migrateOpencodePluginState = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
+  # ponytail: one-time cleanup of plugins/state removed in 175dca5; drop this
+  # block once both machines have switched at least once past that commit.
+  home.activation.removeStaleOpencodeState = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
     set -eu
 
     opencode_home="${homeDirectory}/.config/opencode"
-    install -d -m 0755 "$opencode_home/plugins"
-
-    for file in \
-      auto-explore.ts \
-      auto-recall.ts \
-      claude-auth.ts \
-      graphify.ts \
-      rtk.ts \
-      sound-notify.ts
-    do
-      rm -f "$opencode_home/plugins/$file" "$opencode_home/plugins/$file.before-my-setup"
-    done
-
-    # The scripts/ directory is managed entirely by home-manager (a Nix-store
-    # symlink), so any stale generate-agent-ladder.mjs is replaced atomically by
-    # linkGeneration. Do not rm inside that read-only symlinked tree.
-    rm -f \
-      "$opencode_home/SETUP.md" \
-      "$opencode_home/plugins/graphify.js"
-
     rm -rf "$opencode_home/plugins/openviking" "$opencode_home/plugins/automation" "$opencode_home/services"
     rm -rf "${homeDirectory}/.local/state/opencode/openviking" "${homeDirectory}/.local/state/opencode/context-broker"
-
-    if [ -e "$opencode_home/vendor" ] || [ -L "$opencode_home/vendor" ]; then
-      chmod -R u+w "$opencode_home/vendor" 2>/dev/null || true
-      rm -rf "$opencode_home/vendor"
-    fi
   '';
 
   home.activation.publishOpencodePluginSources = lib.hm.dag.entryAfter [ "linkGeneration" ] ''

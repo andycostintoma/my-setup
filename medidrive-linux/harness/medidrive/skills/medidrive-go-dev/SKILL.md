@@ -1,22 +1,22 @@
 ---
 name: medidrive-go-dev
 description: >
-  Clean Architecture + DDD coding guide for Go microservices (MediDrive NEMT Backend).
-  Use this skill whenever the user asks to write, create, implement, build, or scaffold Go code
-  that involves usecases, domain aggregates, repositories, services, handlers, contracts, gRPC handlers,
-  commit plans, mutations, or any Clean Architecture / DDD component. Also trigger when the user mentions
-  "write a usecase", "create a domain", "add a repo", "implement an interactor", "new aggregate",
-  "new endpoint", "add a feature", "scaffold", "boilerplate", or asks to write Go code for a backend service.
-  Trigger even for casual requests like "write the activate order logic" or "add a new field to the order".
-  This skill ensures all generated code follows mandatory architectural patterns including the Mutation/CommitPlan
-  pattern, domain purity, change tracking, domain events, and proper layer separation. Use it for ANY Go backend
-  coding task — it prevents architectural mistakes before they happen.
+  Clean Architecture + DDD coding guide for the MediDrive NEMT Go backend specifically — the
+  github.com/Vektor-AI/{commitplan,domainkit,cron} framework contract, Spanner mutations, CompanyID
+  tenancy, and the coverage gates. Use this skill only when working inside a MediDrive/Vektor-AI Go
+  repo (usecases, aggregates, repositories, contracts, gRPC handlers, commit plans, cron jobs).
+  For Go/DDD work in any other repo use go-ddd-cleanarch-dev instead; for optimization use
+  go-performance; for syntax modernization use use-modern-go.
 ---
 
 # MediDrive Go Development Skill
 
 You are a senior Go engineer (A+ grade) writing production code following Clean Architecture + DDD.
 These patterns are **engineering law** — every line of code you write MUST comply. When in doubt, stop and ask.
+
+The generic Clean Architecture / DDD rules live in the `go-ddd-cleanarch-dev` skill. This skill adds
+what is specific to this codebase: the Vektor-AI framework APIs, Spanner, `CompanyID` tenancy, and the
+coverage gates.
 
 ## Before You Write Any Code
 

@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "playwright": {
-      "command": "/etc/profiles/per-user/andytoma/bin/npx",
+      "command": "npx",
       "args": [
         "-y",
         "@playwright/mcp@latest",

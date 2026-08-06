@@ -1,6 +1,7 @@
 {
   username,
   harness,
+  homeBaseModule,
   opencodeModule,
   claudeModule,
   codexModule,
@@ -14,15 +15,10 @@ let
   homeDirectory = "/Users/${username}";
   ponytailPackage = ponytail pkgs;
   sharedOpencodeConfig = builtins.fromJSON (builtins.readFile (harness.opencode + "/opencode.json"));
-  localOpencodeConfig = builtins.fromJSON (builtins.readFile ./opencode.local.json);
-  sharedOpencodePlugins = sharedOpencodeConfig.plugin or [ ];
-  mergedOpencodeConfig = lib.recursiveUpdate sharedOpencodeConfig localOpencodeConfig // {
-    plugin =
-      sharedOpencodePlugins
-      ++ (localOpencodeConfig.plugin or [ ])
-      ++ [
-        "./plugins/ponytail/.opencode/plugins/ponytail.mjs"
-      ];
+  mergedOpencodeConfig = sharedOpencodeConfig // {
+    plugin = (sharedOpencodeConfig.plugin or [ ]) ++ [
+      "./plugins/ponytail/.opencode/plugins/ponytail.mjs"
+    ];
   };
   opencodeConfig = pkgs.writeText "opencode-my-setup.json" (builtins.toJSON mergedOpencodeConfig);
   opencodePlaywrightConfig = builtins.toJSON {
@@ -38,11 +34,6 @@ let
     };
   };
 
-  managed = source: {
-    inherit source;
-    force = true;
-  };
-
   managedExecutable = source: {
     inherit source;
     executable = true;
@@ -52,6 +43,23 @@ let
 in
 {
   imports = [
+    (import homeBaseModule {
+      inherit homeDirectory;
+      gitEmail = "toma.andy98@gmail.com";
+      extraGitConfig = ''
+        # Force SSH for MediDrive repos (uses special SSH host with medidrive_key)
+        [url "git@github.com-medidrive:MediDrive-Tech/"]
+            insteadOf = git@github.com:MediDrive-Tech/
+        [url "ssh://git@github.com-medidrive/MediDrive-Tech/"]
+            insteadOf = https://github.com/MediDrive-Tech/
+
+        # Override email for MediDrive repos
+        [includeIf "gitdir:~/medidrive/"]
+            path = ~/.gitconfig-medidrive
+        [url "ssh://git@github.com/"]
+            insteadOf = https://github.com/
+      '';
+    })
     (import opencodeModule {
       inherit
         homeDirectory
@@ -59,23 +67,23 @@ in
         opencodeConfig
         ponytailPackage
         ;
-      extraDocSources = [ ../harness/opencode/docs ];
-      extraPluginSources = [ ../harness/opencode/plugins ];
       extraSkillSources = [ ../harness/shared/skills ];
     })
-    (import claudeModule {
-      inherit homeDirectory harness ponytailPackage;
-      extraSkillSources = [ ../harness/shared/skills ];
-    })
-    (import codexModule {
-      inherit homeDirectory harness ponytailPackage;
-      extraSkillSources = [ ../harness/shared/skills ];
-    })
-    (import antigravityModule {
-      inherit homeDirectory harness ponytailPackage;
-      extraSkillSources = [ ../harness/shared/skills ];
-    })
-  ];
+  ]
+  ++
+    map
+      (
+        module:
+        import module {
+          inherit harness ponytailPackage;
+          extraSkillSources = [ ../harness/shared/skills ];
+        }
+      )
+      [
+        claudeModule
+        codexModule
+        antigravityModule
+      ];
 
   home.username = username;
   home.homeDirectory = homeDirectory;
@@ -158,52 +166,12 @@ in
     '';
   };
 
-  home.file.".gitconfig" = {
-    force = true;
-    text = ''
-      # Git Configuration
-
-      [user]
-          name = Andy Toma
-          email = toma.andy98@gmail.com
-
-      [init]
-          defaultBranch = main
-
-      [pull]
-          rebase = true
-
-      [credential]
-          helper =
-
-      # Force SSH for MediDrive repos (uses special SSH host with medidrive_key)
-      [url "git@github.com-medidrive:MediDrive-Tech/"]
-          insteadOf = git@github.com:MediDrive-Tech/
-      [url "ssh://git@github.com-medidrive/MediDrive-Tech/"]
-          insteadOf = https://github.com/MediDrive-Tech/
-
-      # Override email for MediDrive repos
-      [includeIf "gitdir:~/medidrive/"]
-          path = ~/.gitconfig-medidrive
-      [url "ssh://git@github.com/"]
-          insteadOf = https://github.com/
-      [core]
-          excludesfile = /Users/${username}/.gitignore_global
-          editor = vim
-    '';
-  };
-
   home.file.".gitconfig-medidrive" = {
     force = true;
     text = ''
       [user]
           email = andy.toma@medidrive.com
     '';
-  };
-
-  home.file.".gitignore_global" = {
-    force = true;
-    text = "";
   };
 
   home.file.".ssh/config" = {
@@ -271,42 +239,6 @@ in
 
   home.file.".docker/cli-plugins/docker-compose" =
     managedExecutable "${pkgs.docker-compose}/bin/docker-compose";
-
-  home.file.".local/bin/opencode-web-server" = {
-    executable = true;
-    text = ''
-      #!${pkgs.runtimeShell}
-      set -eu
-
-      password_file="$HOME/.secrets/opencode/web-password"
-      if [ ! -s "$password_file" ]; then
-        printf 'Missing opencode web password file: %s\n' "$password_file" >&2
-        exit 1
-      fi
-
-      export HOME="/Users/${username}"
-      export OPENCODE_SERVER_USERNAME="opencode"
-      export OPENCODE_SERVER_PASSWORD="$(cat "$password_file")"
-      export PATH="${
-        lib.makeBinPath (
-          packages pkgs
-          ++ [
-            pkgs.bash
-            pkgs.coreutils
-            pkgs.git
-            pkgs.nodejs
-            pkgs.bun
-          ]
-        )
-      }:/usr/bin:/bin:/usr/sbin:/sbin"
-
-      exec ${pkgs.opencode}/bin/opencode web \
-        --port 4096 \
-        --hostname 0.0.0.0 \
-        --mdns \
-        --mdns-domain opencode.local
-    '';
-  };
 
   home.file.".local/bin/opencode-askpass" = {
     executable = true;
@@ -376,20 +308,6 @@ in
     '';
   };
 
-  home.activation.opencodeWebSecrets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    set -eu
-
-    secret_dir="/Users/${username}/.secrets/opencode"
-    password_file="$secret_dir/web-password"
-
-    install -d -m 0700 "$secret_dir" /Users/${username}/Library/Logs
-    if [ ! -s "$password_file" ]; then
-      umask 077
-      ${pkgs.openssl}/bin/openssl rand -base64 32 > "$password_file"
-    fi
-    chmod 0600 "$password_file"
-  '';
-
   home.activation.setDefaultBrowser = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     set -eu
 
@@ -401,23 +319,6 @@ in
       ${pkgs.defaultbrowser}/bin/defaultbrowser chrome
     fi
   '';
-
-  launchd.agents.opencode-web = {
-    enable = false;
-    config = {
-      ProgramArguments = [
-        "/Users/${username}/.local/bin/opencode-web-server"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      WorkingDirectory = "/Users/${username}";
-      StandardOutPath = "/Users/${username}/Library/Logs/opencode-web.log";
-      StandardErrorPath = "/Users/${username}/Library/Logs/opencode-web.error.log";
-      EnvironmentVariables = {
-        HOME = "/Users/${username}";
-      };
-    };
-  };
 
   launchd.agents."com.jetbrains.toolbox" = {
     enable = true;
@@ -486,23 +387,7 @@ in
     };
   };
 
-  programs.home-manager.enable = true;
-
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-    enableZshIntegration = true;
-  };
-
   programs.zsh = {
-    enable = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
-    oh-my-zsh = {
-      enable = true;
-      theme = "robbyrussell";
-      plugins = [ "git" ];
-    };
     shellAliases = {
       code = "codium";
       medidrive = "ssh -t medidrive-vm 'cd ~/medidrive && exec $SHELL -l'";
@@ -539,9 +424,4 @@ in
       }
     '';
   };
-
-  programs.git.enable = true;
-  programs.gh.enable = true;
-  programs.jq.enable = true;
-
 }

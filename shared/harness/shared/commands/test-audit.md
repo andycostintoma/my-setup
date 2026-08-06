@@ -29,4 +29,4 @@ Output:
 - Findings categorized by priority (critical, medium, low)
 - Exact file paths and line numbers
 - Actionable recommendations
-- Update test guidelines or PLAN.md with new discoveries if the project uses them
+- Update test guidelines with new discoveries if the project uses them

@@ -7,10 +7,7 @@ let
   pins = import ./pins.nix;
 in
 rec {
-  inherit (sharedPackages)
-    ponytail
-    setupctl
-    ;
+  inherit (sharedPackages) ponytail;
 
   userFromNixpkgs =
     pkgs: with pkgs; [
@@ -127,44 +124,6 @@ rec {
       '';
     };
 
-  # Wrapper for macOS `open` that forces URLs to open in Google Chrome.
-  # OpenCode calls Bun.spawn(["open", url]) directly, bypassing the shell, so
-  # the system default-browser setting is what matters. On macOS 13+ changing
-  # the default browser requires a user-confirmed dialog that cannot be
-  # scripted. This wrapper sits earlier in PATH than /usr/bin/open and
-  # intercepts http/https URLs, delegating everything else to the real open.
-  chromeOpenWrapper =
-    pkgs:
-    pkgs.runCommand "chrome-open-wrapper" { } ''
-      mkdir -p $out/bin
-
-      cat > $out/bin/open <<'EOF'
-      #!/bin/sh
-      # Redirect http/https URLs to Google Chrome; pass everything else through.
-      CHROME_APP="/Applications/Nix Apps/Google Chrome.app"
-      REAL_OPEN="/usr/bin/open"
-
-      # Scan args for a URL flag or a bare http(s) argument.
-      use_chrome=0
-      for arg in "$@"; do
-        case "$arg" in
-          http://*|https://*)
-            use_chrome=1
-            break
-            ;;
-        esac
-      done
-
-      if [ "$use_chrome" = "1" ] && [ -d "$CHROME_APP" ]; then
-        exec "$REAL_OPEN" -a "$CHROME_APP" "$@"
-      else
-        exec "$REAL_OPEN" "$@"
-      fi
-      EOF
-
-      chmod +x $out/bin/open
-    '';
-
   # Local transcription CLI. Python, faster-whisper, and the entrypoint source
   # are all managed by this flake.
   transcriber =
@@ -209,9 +168,7 @@ rec {
     sharedPackages.packages pkgs
     ++ userFromNixpkgs pkgs
     ++ [
-      (chromeOpenWrapper pkgs)
       (epubToMarkdown pkgs)
-      (setupctl pkgs)
       (pdfToMarkdown pkgs)
       (transcriber pkgs)
     ];

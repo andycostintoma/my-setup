@@ -4,7 +4,7 @@ description: Research the latest AI-agent tooling trends and propose adoptions f
 Keep this agent harness current with the evolving AI-coding-agent ecosystem.
 This command is **outward-looking**: research what's new and good in the wider
 landscape, then propose concrete adoptions for this repo. For inward-looking
-drift cleanup (pruning PLAN.md, destaling AGENTS.md, fixing stale references),
+drift cleanup (destaling AGENTS.md, fixing stale references),
 use `/update-docs` instead.
 
 Step 1: Research the current landscape (the main job)

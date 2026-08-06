@@ -41,5 +41,4 @@ Output format:
 2. Exact file paths and line numbers for each finding
 3. Why it matters (correctness, isolation, architectural drift, performance, maintainability)
 4. Actionable recommendation for each finding
-5. Update PLAN.md with new open issues discovered if the project uses one
-6. Ask targeted questions when any finding is ambiguous
+5. Ask targeted questions when any finding is ambiguous

@@ -1,7 +1,5 @@
 {
-  homeDirectory,
   harness,
-  extraCommandSources ? [ ],
   extraSkillSources ? [ ],
   ponytailPackage ? null,
 }:
@@ -27,23 +25,26 @@ let
 
   existingSources = builtins.filter builtins.pathExists;
 
-  antigravitySkills = mergeHarnessDir "antigravity-skills" (existingSources (
-    [
-      (harness.shared + "/skills")
-      (harness.antigravity + "/skills")
-    ]
-    ++ extraSkillSources
-    ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/skills") ]
-  ));
+  antigravitySkills = mergeHarnessDir "antigravity-skills" (
+    existingSources (
+      [
+        (harness.shared + "/skills")
+        (harness.antigravity + "/skills")
+      ]
+      ++ extraSkillSources
+      ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/skills") ]
+    )
+  );
 
-  antigravityCommands = mergeHarnessDir "antigravity-commands" (existingSources (
-    [
-      (harness.shared + "/commands")
-      (harness.antigravity + "/commands")
-    ]
-    ++ extraCommandSources
-    ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/.opencode/command") ]
-  ));
+  antigravityCommands = mergeHarnessDir "antigravity-commands" (
+    existingSources (
+      [
+        (harness.shared + "/commands")
+        (harness.antigravity + "/commands")
+      ]
+      ++ lib.optionals (ponytailPackage != null) [ (ponytailPackage + "/.opencode/command") ]
+    )
+  );
 
   antigravityAgents =
     (builtins.readFile (harness.shared + "/AGENTS.md"))
@@ -69,21 +70,7 @@ in
     force = true;
   };
   home.file.".gemini/config/mcp_config.json" = managed (harness.antigravity + "/mcp_config.json");
-  home.file.".gemini/antigravity/mcp_config.json" = managed (harness.antigravity + "/mcp_config.json");
-
-  home.activation.removeOldAntigravityHarnessDirectories =
-    lib.hm.dag.entryBefore [ "linkGeneration" ]
-      ''
-        set -eu
-
-        for target in \
-          ${homeDirectory}/.gemini/antigravity-cli/skills \
-          ${homeDirectory}/.gemini/antigravity-cli/commands
-        do
-          if [ -e "$target" ] || [ -L "$target" ]; then
-            rm -rf "$target"
-          fi
-        done
-      '';
-
+  home.file.".gemini/antigravity/mcp_config.json" = managed (
+    harness.antigravity + "/mcp_config.json"
+  );
 }

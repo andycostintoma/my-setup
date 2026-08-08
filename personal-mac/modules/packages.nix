@@ -37,9 +37,6 @@ rec {
       jetbrains-toolbox
       libreoffice-bin
       teams
-      # ponytail: obsidian is broken in nixpkgs-unstable on darwin -- the app
-      # unpack lands in "Obsidian <version>-universal/" and the builder looks
-      # for Obsidian.app at the root. Re-add once upstream fixes sourceRoot.
       orbstack
       postman
       qbittorrent
@@ -54,6 +51,15 @@ rec {
     ];
 
   # Personal-only local packages.
+  # ponytail: nixpkgs' obsidian.sourceRoot assumes the dmg unpacks straight to
+  # "Obsidian.app", but this release nests it under "Obsidian <version>-universal/".
+  # Drop this override once upstream fixes sourceRoot detection.
+  obsidian =
+    pkgs:
+    pkgs.obsidian.overrideAttrs (old: {
+      sourceRoot = "Obsidian ${old.version}-universal/${old.appname}.app";
+    });
+
   microsoftEdge =
     pkgs:
     pkgs.stdenvNoCC.mkDerivation {
@@ -181,6 +187,7 @@ rec {
     ++ [
       (kumospace pkgs)
       (microsoftEdge pkgs)
+      (obsidian pkgs)
     ]
     ++ pkgs.lib.optionals (antigravity-app != null) [ antigravity-app ];
 }

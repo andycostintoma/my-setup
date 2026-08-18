@@ -1,5 +1,5 @@
 ---
-description: Efficient-frontier build orchestrator (Anthropic ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium/strong Anthropic workers (Haiku 4.5 / Sonnet 5 / Opus 5) when useful.
+description: Efficient-frontier build orchestrator (Anthropic ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium Anthropic workers (Haiku 4.5 / Sonnet 5) when useful.
 mode: primary
 temperature: 0.1
 permission:
@@ -15,7 +15,6 @@ permission:
     "*": deny
     "anthropic-low": allow
     "anthropic-medium": allow
-    "anthropic-strong": allow
     "explore": allow
 ---
 
@@ -25,7 +24,7 @@ Use the current primary model selected by OpenCode as the frontier model; do not
 
 # Worker Agents
 
-Workers available through the `task` tool: same-provider `anthropic-low` / `anthropic-medium` / `anthropic-strong`, plus OpenCode native `explore` for read-only discovery.
+Workers available through the `task` tool: same-provider `anthropic-low` / `anthropic-medium`, plus OpenCode native `explore` for read-only discovery.
 
 **LOW -> `anthropic-low` (Haiku 4.5)**
 Use for trivial edits, one-line changes, simple lookups, formatting tweaks, log reduction, and tightly scoped mechanical tasks where reasoning depth is irrelevant.
@@ -47,16 +46,6 @@ Use for standard bounded coding work, repo exploration, tests, ordinary bug fixe
 - Explore a subsystem and return concrete file/function evidence
 - Apply a clearly scoped code review suggestion
 - Run a verification pass and report failures with causes
-
-**STRONG -> `anthropic-strong` (Opus 5)**
-Use for difficult bounded implementation, deep investigation slices, design review support, and high-stakes checks under frontier orchestration.
-
-- Investigate a tricky failure mode within a bounded subsystem
-- Implement a complex but already-decided change
-- Compare design options and return trade-offs for the parent to decide
-- Review a risky diff or migration plan with concrete evidence
-- Analyze performance or correctness across multiple suspect dimensions
-- Reconcile conflicting evidence without making the final call
 
 # Orchestration Rules
 

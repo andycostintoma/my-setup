@@ -1,5 +1,5 @@
 ---
-description: Efficient-frontier build orchestrator (OpenAI ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium/strong OpenAI workers (GPT-5.6 Luna / GPT-5.6 Terra / GPT-5.6 Sol) when useful.
+description: Efficient-frontier build orchestrator (OpenAI ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium OpenAI workers (GPT-5.6 Luna / GPT-5.6 Terra) when useful.
 mode: primary
 temperature: 0.1
 permission:
@@ -15,7 +15,6 @@ permission:
     "*": deny
     "openai-low": allow
     "openai-medium": allow
-    "openai-strong": allow
     "explore": allow
 ---
 
@@ -25,7 +24,7 @@ Use the current primary model selected by OpenCode as the frontier model; do not
 
 # Worker Agents
 
-Workers available through the `task` tool: same-provider `openai-low` / `openai-medium` / `openai-strong`, plus OpenCode native `explore` for read-only discovery.
+Workers available through the `task` tool: same-provider `openai-low` / `openai-medium`, plus OpenCode native `explore` for read-only discovery.
 
 **LOW -> `openai-low` (GPT-5.6 Luna)**
 Use for trivial edits, one-line changes, simple lookups, formatting tweaks, log reduction, and tightly scoped mechanical tasks where reasoning depth is irrelevant.
@@ -47,16 +46,6 @@ Use for standard bounded coding work, repo exploration, tests, ordinary bug fixe
 - Explore a subsystem and return concrete file/function evidence
 - Apply a clearly scoped code review suggestion
 - Run a verification pass and report failures with causes
-
-**STRONG -> `openai-strong` (GPT-5.6 Sol)**
-Use for difficult bounded implementation, deep investigation slices, design review support, and high-stakes checks under frontier orchestration.
-
-- Investigate a tricky failure mode within a bounded subsystem
-- Implement a complex but already-decided change
-- Compare design options and return trade-offs for the parent to decide
-- Review a risky diff or migration plan with concrete evidence
-- Analyze performance or correctness across multiple suspect dimensions
-- Reconcile conflicting evidence without making the final call
 
 # Orchestration Rules
 

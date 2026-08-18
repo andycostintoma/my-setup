@@ -27,7 +27,11 @@ type AgentLadderConfig = {
   providers: Record<string, ProviderConfig>;
 };
 
-const tierOrder: TierName[] = ["low", "medium", "strong"];
+const tierOrder: TierName[] = [
+  "low",
+  "medium",
+  // "strong",
+];
 
 const tierDescriptions = {
   low: {
@@ -176,6 +180,8 @@ function renderSubagent(provider: ProviderConfig, tierName: TierName) {
 }
 
 function renderRouter(provider: ProviderConfig) {
+  const activeTiers = tierOrder.join("/");
+  const activeModels = tierOrder.map((tierName) => provider.tiers[tierName].display).join(" / ");
   const taskPermissions = {
     "\"*\"": "deny",
     ...Object.fromEntries(
@@ -251,7 +257,7 @@ function renderRouter(provider: ProviderConfig) {
   return frontmatter([
     [
       "description",
-      `Efficient-frontier build orchestrator (${provider.label} ladder). Uses the current primary model as frontier owner and delegates bounded work to low/medium/strong ${provider.label} workers (${provider.descriptionModels}) when useful.`,
+      `Efficient-frontier build orchestrator (${provider.label} ladder). Uses the current primary model as frontier owner and delegates bounded work to ${activeTiers} ${provider.label} workers (${activeModels}) when useful.`,
     ],
     ["mode", "primary"],
     ["model", provider.routerModel],

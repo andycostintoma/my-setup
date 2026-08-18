@@ -12,6 +12,7 @@ rec {
       curl
       delta
       fd
+      ffmpeg
       git
       jq
       ripgrep

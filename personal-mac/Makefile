@@ -4,7 +4,7 @@ EVAL_ATTR = darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drv
 
 include ../shared/make/common.mk
 
-FLAKE_UPDATE_ARGS = --override-input shared $(SHARED_REF)
+FLAKE_UPDATE_INPUTS = nixpkgs nix-darwin home-manager antigravity-nix nix-homebrew
 NIX_INSTALLER_URL ?= https://install.determinate.systems/nix
 PIN_UPDATE_PACKAGES = \
 	nixpkgs\#go \
@@ -57,7 +57,7 @@ update: update-inputs update-pins audit
 
 update-inputs:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \
-	$(NIX_CMD) flake update --flake $(FLAKE_REF) $(FLAKE_UPDATE_ARGS)
+	$(NIX_CMD) flake update $(FLAKE_UPDATE_INPUTS) --flake $(FLAKE_REF)
 
 update-pins:
 	@if [ -f '$(NIX_PROFILE)' ]; then . '$(NIX_PROFILE)'; fi; \

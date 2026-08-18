@@ -3,9 +3,9 @@
 # Run "make update-pins" when darwin-rebuild reports a hash mismatch here.
 {
   microsoftEdge = {
-    version = "151.0.4129.59";
+    version = "151.0.4129.93";
     url = "https://go.microsoft.com/fwlink/?linkid=2093504";
-    hash = "sha256-UnAVkOCIOIuGXr2InJ/effyaR3ZS95JI2hLbj3lw9FA=";
+    hash = "sha256-CHTsaICGC/Mw+Q24hWAQrglzJGI9r0bUD4WQJXHfCCU=";
   };
 
   kumospace = {

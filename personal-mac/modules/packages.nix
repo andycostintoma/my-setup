@@ -57,7 +57,7 @@ rec {
   obsidian =
     pkgs:
     pkgs.obsidian.overrideAttrs (old: {
-      sourceRoot = "Obsidian ${old.version}-universal/${old.appname}.app";
+      sourceRoot = "Obsidian ${old.version}-universal";
     });
 
   microsoftEdge =

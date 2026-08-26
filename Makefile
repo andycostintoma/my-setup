@@ -1,4 +1,4 @@
-.PHONY: help mac-help mac-fmt mac-check mac-switch mac-audit vm-help vm-fmt vm-check vm-switch vm-audit
+.PHONY: help mac-help mac-fmt mac-check mac-switch mac-audit medidrive-help medidrive-fmt medidrive-check medidrive-switch medidrive-audit deviqon-help deviqon-fmt deviqon-check deviqon-switch
 
 help:
 	@printf '%s\n' \
@@ -12,11 +12,17 @@ help:
 		'  make mac-audit' \
 		'' \
 		'MediDrive VM:' \
-		'  make vm-help' \
-		'  make vm-fmt' \
-		'  make vm-check' \
-		'  make vm-switch' \
-		'  make vm-audit'
+		'  make medidrive-help' \
+		'  make medidrive-fmt' \
+		'  make medidrive-check' \
+		'  make medidrive-switch' \
+		'  make medidrive-audit' \
+		'' \
+		'Deviqon Linux:' \
+		'  make deviqon-help' \
+		'  make deviqon-fmt' \
+		'  make deviqon-check' \
+		'  make deviqon-switch'
 
 mac-help:
 	$(MAKE) -C personal-mac help
@@ -33,17 +39,29 @@ mac-switch:
 mac-audit:
 	$(MAKE) -C personal-mac audit
 
-vm-help:
+medidrive-help:
 	$(MAKE) -C medidrive-linux help
 
-vm-fmt:
+medidrive-fmt:
 	$(MAKE) -C medidrive-linux fmt
 
-vm-check:
+medidrive-check:
 	$(MAKE) -C medidrive-linux check
 
-vm-switch:
+medidrive-switch:
 	$(MAKE) -C medidrive-linux switch
 
-vm-audit:
+medidrive-audit:
 	$(MAKE) -C medidrive-linux audit
+
+deviqon-help:
+	$(MAKE) -C deviqon-linux help
+
+deviqon-fmt:
+	$(MAKE) -C deviqon-linux fmt
+
+deviqon-check:
+	$(MAKE) -C deviqon-linux check
+
+deviqon-switch:
+	$(MAKE) -C deviqon-linux switch

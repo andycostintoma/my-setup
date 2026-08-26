@@ -22,6 +22,8 @@
       };
     in
     {
+      packages.${system}.home-manager = home-manager.packages.${system}.default;
+
       homeConfigurations.deviqon = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [

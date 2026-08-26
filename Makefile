@@ -1,4 +1,4 @@
-.PHONY: help mac-help mac-fmt mac-check mac-switch mac-audit medidrive-help medidrive-fmt medidrive-check medidrive-switch medidrive-audit deviqon-help deviqon-fmt deviqon-check deviqon-switch
+.PHONY: help mac-help mac-bootstrap mac-fmt mac-check mac-switch mac-audit medidrive-help medidrive-bootstrap medidrive-fmt medidrive-check medidrive-switch medidrive-audit deviqon-help deviqon-bootstrap deviqon-fmt deviqon-check deviqon-switch
 
 help:
 	@printf '%s\n' \
@@ -6,6 +6,7 @@ help:
 		'' \
 		'Mac:' \
 		'  make mac-help' \
+		'  make mac-bootstrap' \
 		'  make mac-fmt' \
 		'  make mac-check' \
 		'  make mac-switch' \
@@ -13,6 +14,7 @@ help:
 		'' \
 		'MediDrive VM:' \
 		'  make medidrive-help' \
+		'  make medidrive-bootstrap' \
 		'  make medidrive-fmt' \
 		'  make medidrive-check' \
 		'  make medidrive-switch' \
@@ -20,12 +22,16 @@ help:
 		'' \
 		'Deviqon Linux:' \
 		'  make deviqon-help' \
+		'  make deviqon-bootstrap' \
 		'  make deviqon-fmt' \
 		'  make deviqon-check' \
 		'  make deviqon-switch'
 
 mac-help:
 	$(MAKE) -C personal-mac help
+
+mac-bootstrap:
+	$(MAKE) -C personal-mac bootstrap
 
 mac-fmt:
 	$(MAKE) -C personal-mac fmt
@@ -42,6 +48,9 @@ mac-audit:
 medidrive-help:
 	$(MAKE) -C medidrive-linux help
 
+medidrive-bootstrap:
+	$(MAKE) -C medidrive-linux bootstrap
+
 medidrive-fmt:
 	$(MAKE) -C medidrive-linux fmt
 
@@ -56,6 +65,9 @@ medidrive-audit:
 
 deviqon-help:
 	$(MAKE) -C deviqon-linux help
+
+deviqon-bootstrap:
+	$(MAKE) -C deviqon-linux bootstrap
 
 deviqon-fmt:
 	$(MAKE) -C deviqon-linux fmt

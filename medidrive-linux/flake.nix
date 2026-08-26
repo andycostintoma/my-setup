@@ -52,7 +52,10 @@
       };
     in
     {
-      packages.${system}.setupctl = sharedPackages.setupctl pkgs;
+      packages.${system} = {
+        setupctl = sharedPackages.setupctl pkgs;
+        home-manager = home-manager.packages.${system}.default;
+      };
 
       homeConfigurations.medidrive = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;

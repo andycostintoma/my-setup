@@ -3,9 +3,9 @@
 EVAL_ATTR = darwinConfigurations.Andys-Mac-mini.config.system.build.toplevel.drvPath
 
 include ../shared/make/common.mk
+include ../shared/make/bootstrap.mk
 
 FLAKE_UPDATE_INPUTS = nixpkgs nix-darwin home-manager antigravity-nix nix-homebrew
-NIX_INSTALLER_URL ?= https://install.determinate.systems/nix
 PIN_UPDATE_PACKAGES = \
 	nixpkgs\#go \
 	nixpkgs\#nodejs \
@@ -35,14 +35,7 @@ install-clt:
 	else \
 		printf '%s\n' 'Installing Apple Command Line Tools. Complete the macOS prompt, then rerun make bootstrap.'; \
 		xcode-select --install; \
-	fi
-
-install-nix:
-	@if command -v nix >/dev/null 2>&1; then \
-		printf '%s\n' 'Nix already installed.'; \
-	else \
-		printf '%s\n' 'Installing Nix with the Determinate Systems installer.'; \
-		curl --proto '=https' --tlsv1.2 -sSf -L $(NIX_INSTALLER_URL) | sh -s -- install; \
+		exit 1; \
 	fi
 
 switch:

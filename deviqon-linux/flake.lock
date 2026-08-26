@@ -40,8 +40,20 @@
     "root": {
       "inputs": {
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "shared": "shared"
       }
+    },
+    "shared": {
+      "locked": {
+        "path": "../shared",
+        "type": "path"
+      },
+      "original": {
+        "path": "../shared",
+        "type": "path"
+      },
+      "parent": []
     }
   },
   "root": "root",

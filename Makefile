@@ -1,4 +1,4 @@
-.PHONY: help mac-help mac-bootstrap mac-fmt mac-check mac-switch mac-audit medidrive-help medidrive-bootstrap medidrive-fmt medidrive-check medidrive-switch medidrive-audit deviqon-help deviqon-bootstrap deviqon-fmt deviqon-check deviqon-switch
+.PHONY: help mac-help mac-bootstrap mac-fmt mac-check mac-switch mac-audit medidrive-help medidrive-bootstrap medidrive-fmt medidrive-check medidrive-switch medidrive-audit deviqon-help deviqon-bootstrap deviqon-fmt deviqon-check deviqon-switch deviqon-audit
 
 help:
 	@printf '%s\n' \
@@ -25,7 +25,8 @@ help:
 		'  make deviqon-bootstrap' \
 		'  make deviqon-fmt' \
 		'  make deviqon-check' \
-		'  make deviqon-switch'
+		'  make deviqon-switch' \
+		'  make deviqon-audit'
 
 mac-help:
 	$(MAKE) -C personal-mac help
@@ -77,3 +78,6 @@ deviqon-check:
 
 deviqon-switch:
 	$(MAKE) -C deviqon-linux switch
+
+deviqon-audit:
+	$(MAKE) -C deviqon-linux audit

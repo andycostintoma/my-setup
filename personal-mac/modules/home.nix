@@ -206,8 +206,6 @@ in
         ServerAliveCountMax 4
         ExitOnForwardFailure yes
         TCPKeepAlive yes
-        LocalForward 14096 127.0.0.1:14096
-        RemoteForward 127.0.0.1:14097 127.0.0.1:14097
         ControlMaster auto
         ControlPath /Users/${username}/.ssh/controlmasters/%r@%h:%p
         ControlPersist 10m
@@ -349,26 +347,6 @@ in
     };
   };
 
-  launchd.agents.medidrive-tunnel = {
-    enable = true;
-    config = {
-      ProgramArguments = [
-        "/usr/bin/ssh"
-        "-N"
-        "medidrive-vm"
-      ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      WorkingDirectory = "/Users/${username}";
-      StandardOutPath = "/Users/${username}/Library/Logs/medidrive-tunnel.log";
-      StandardErrorPath = "/Users/${username}/Library/Logs/medidrive-tunnel.error.log";
-      EnvironmentVariables = {
-        HOME = "/Users/${username}";
-        PATH = "/usr/bin:/bin:/usr/sbin:/sbin";
-      };
-    };
-  };
-
   launchd.agents.opencode-sound-listener = {
     enable = true;
     config = {
@@ -391,9 +369,7 @@ in
     shellAliases = {
       code = "codium";
       medidrive = "ssh -t medidrive-vm 'cd ~/medidrive && exec $SHELL -l'";
-      medidrive-sync = "rsync -az --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' -e 'ssh' medidrive-vm:~/medidrive/ ~/medidrive-local/";
-      medidrive-tunnel-status = "ssh -O check medidrive-vm";
-      medidrive-tunnel-exit = "ssh -O exit medidrive-vm";
+      medidrive-sync = "rsync -a --delete --exclude='.direnv/' --exclude='node_modules/' --exclude='.next/' --exclude='dist/' --exclude='build/' --exclude='target/' --exclude='coverage/' --exclude='.cache/' --exclude='worktrees/' -e 'ssh -o ControlPath=none -o ClearAllForwardings=yes' medidrive-vm:~/medidrive/ ~/medidrive-local/";
       hm-switch = "home-manager switch --flake ~/my-setup/personal-mac";
       nix-switch = "make -C ~/my-setup/personal-mac switch";
       opencode-playwright = "OPENCODE_CONFIG_CONTENT=${lib.escapeShellArg opencodePlaywrightConfig} ${pkgs.opencode}/bin/opencode";

@@ -16,6 +16,7 @@ rec {
       git
       jq
       ripgrep
+      rsync
       tmux
       tree
       watch

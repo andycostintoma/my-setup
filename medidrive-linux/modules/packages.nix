@@ -25,6 +25,39 @@ rec {
       vendorHash = "sha256-Qi3nBaoL/Px8ujRW2H2fXoJHc9CQ+BeGMpPl/XI7gCE=";
     };
 
+  # CodeRabbit publishes the CLI only as a prebuilt Bun single-file executable,
+  # so there is no source to build. It must stay unpatched: patchelf relocates
+  # sections past Bun's appended bundle trailer and the resulting binary
+  # segfaults, so it resolves glibc through this VM's FHS loader instead.
+  coderabbit =
+    pkgs:
+    pkgs.stdenvNoCC.mkDerivation rec {
+      pname = "coderabbit";
+      version = "0.7.5";
+
+      src = pkgs.fetchurl {
+        url = "https://cli.coderabbit.ai/releases/${version}/coderabbit-linux-x64.zip";
+        hash = "sha256-C0fLTedRiMAYTykNjWgYp5OpUo6Pec9mDGpl8iWwRcE=";
+      };
+
+      nativeBuildInputs = [ pkgs.unzip ];
+      sourceRoot = ".";
+
+      dontConfigure = true;
+      dontBuild = true;
+      dontStrip = true;
+      dontPatchELF = true;
+
+      installPhase = ''
+        runHook preInstall
+
+        install -Dm755 coderabbit $out/bin/coderabbit
+        ln -s coderabbit $out/bin/cr
+
+        runHook postInstall
+      '';
+    };
+
   # Shim so t3code desktop-app SSH pairing finds `t3` on PATH without
   # trying to `npm install -g t3@<electron-version>`.
   t3 =
@@ -38,6 +71,7 @@ rec {
     pkgs:
     sharedPackages.packages pkgs
     ++ [
+      (coderabbit pkgs)
       (gcloud pkgs)
       (spanner-cli pkgs)
       (t3 pkgs)

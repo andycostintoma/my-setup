@@ -1,5 +1,9 @@
 # OpenCode Rules
 
+## Subagents
+
+- Use only the medium-tier subagents: `anthropic-medium` and `openai-medium`. Do not delegate to `explore`, `general`, `anthropic-low`, or `openai-low`.
+
 ## Browser Automation
 
 - Playwright MCP is disabled by default to keep model context small. When the user asks for browser automation, instruct them to use `opencode-playwright` (Playwright-enabled OpenCode entrypoint) instead of temporarily enabling the Playwright MCP and restarting sessions.

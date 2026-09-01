@@ -58,7 +58,10 @@ in
   # Go's `go install` target ($GOPATH/bin). Nix provides `go` itself, but the
   # binaries it installs (go-cleanarch, nilaway, air, ...) land here and need to
   # be on PATH for `make dev-tools` / `make lint` to work.
-  home.sessionPath = [ "${homeDirectory}/go/bin" ];
+  home.sessionPath = [
+    "${homeDirectory}/go/bin"
+    "${homeDirectory}/.local/bin"
+  ];
 
   home.sessionVariables = {
     LANG = "en_US.UTF-8";

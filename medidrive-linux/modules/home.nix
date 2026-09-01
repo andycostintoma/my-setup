@@ -386,6 +386,56 @@ in
     };
   };
 
+  home.file.".local/bin/git-sync" = {
+    executable = true;
+    source = ../tools/git-sync.sh;
+  };
+
+  systemd.user.services.git-sync = {
+    Unit = {
+      Description = "Sync ~/medidrive/repos with the MediDrive GitHub org";
+    };
+    Service = {
+      Type = "oneshot";
+      TimeoutStartSec = "25m";
+      ExecStart = "${homeDirectory}/.local/bin/git-sync";
+      Environment = [
+        "HOME=${homeDirectory}"
+        "PARALLEL_JOBS=8"
+        "NO_COLOR=1"
+        "PATH=${
+          lib.makeBinPath [
+            pkgs.bash
+            pkgs.coreutils
+            pkgs.findutils
+            pkgs.gawk
+            pkgs.gh
+            pkgs.git
+            pkgs.gnugrep
+            pkgs.gnused
+            pkgs.jq
+            pkgs.openssh
+            pkgs.procps
+          ]
+        }:${homeDirectory}/.nix-profile/bin:/usr/bin:/bin"
+      ];
+    };
+  };
+
+  systemd.user.timers.git-sync = {
+    Unit = {
+      Description = "Half-hourly sync of ~/medidrive/repos";
+    };
+    Timer = {
+      OnBootSec = "10m";
+      OnUnitActiveSec = "30m";
+      RandomizedDelaySec = "3m";
+    };
+    Install = {
+      WantedBy = [ "timers.target" ];
+    };
+  };
+
   systemd.user.services.t3code = {
     Unit = {
       Description = "T3 code server";

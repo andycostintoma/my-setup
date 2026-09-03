@@ -206,6 +206,8 @@ in
         ServerAliveCountMax 4
         ExitOnForwardFailure yes
         TCPKeepAlive yes
+        # Required for MediDrive OpenCode notifications: route VM requests to the Mac sound listener.
+        RemoteForward 127.0.0.1:14097 127.0.0.1:14097
         ControlMaster auto
         ControlPath /Users/${username}/.ssh/controlmasters/%r@%h:%p
         ControlPersist 10m
@@ -358,6 +360,28 @@ in
       WorkingDirectory = "/Users/${username}";
       StandardOutPath = "/Users/${username}/Library/Logs/opencode-sound-listener.log";
       StandardErrorPath = "/Users/${username}/Library/Logs/opencode-sound-listener.error.log";
+      EnvironmentVariables = {
+        HOME = "/Users/${username}";
+        PATH = "/usr/bin:/bin:/usr/sbin:/sbin";
+      };
+    };
+  };
+
+  # Required for MediDrive OpenCode notifications; do not remove unless their transport is replaced.
+  # This keeps the reverse SSH route alive for detached and IDE-hosted sessions.
+  launchd.agents.medidrive-tunnel = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "/usr/bin/ssh"
+        "-N"
+        "medidrive-vm"
+      ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      WorkingDirectory = "/Users/${username}";
+      StandardOutPath = "/Users/${username}/Library/Logs/medidrive-tunnel.log";
+      StandardErrorPath = "/Users/${username}/Library/Logs/medidrive-tunnel.error.log";
       EnvironmentVariables = {
         HOME = "/Users/${username}";
         PATH = "/usr/bin:/bin:/usr/sbin:/sbin";

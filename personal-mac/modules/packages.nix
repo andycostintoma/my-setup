@@ -36,7 +36,6 @@ rec {
       google-chrome
       jetbrains-toolbox
       libreoffice-bin
-      teams
       orbstack
       postman
       qbittorrent
